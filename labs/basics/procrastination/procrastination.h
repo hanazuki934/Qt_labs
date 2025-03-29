@@ -18,9 +18,29 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QTableWidgetItem>
+#include <QWidget>
 #include <QHeaderView>
 #include <QRandomGenerator>
 #include <QDebug>
+
+class StackChosen {
+   public:
+    explicit StackChosen() = default;
+
+    void stackPush(int index);
+
+    void stackClear();
+
+    int getStackElement(int index);
+
+    int size();
+
+    int currentPosition = -1;
+    int lastResetPosition = -1;
+
+   private:
+    QVector<int> stack = {};
+};
 
 class TotalProgressBar : public QProgressBar
 {
@@ -51,14 +71,12 @@ class QuestionViewGroupBox : public QGroupBox {
 
    public:
     explicit QuestionViewGroupBox(QWidget* parent = nullptr);
-
-   public slots:
     void setTicketInfo(int number, QString name, QString status);
 
    private:
     friend class TicketApp;
     int chosenTicket_ = 0;
-    QVector<int> stackChosen = {};
+    StackChosen stackChosen;
 
     QLabel* ticketNumber_;
     QLabel* ticketName_;

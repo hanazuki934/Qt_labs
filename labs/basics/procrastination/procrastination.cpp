@@ -1,5 +1,22 @@
 #include "procrastination.h"
 
+void StackChosen::stackPush(int index) {
+    stack.append(index);
+}
+int StackChosen::getStackElement(int index) {
+    return stack[index];
+}
+
+int StackChosen::size() {
+    return stack.size();
+}
+
+void StackChosen::stackClear() {
+    stack.clear();
+    currentPosition = -1;
+    lastResetPosition = -1;
+}
+
 TotalProgressBar::TotalProgressBar(QWidget *parent)
     : QProgressBar(parent) {
     setRange(0, 100);
@@ -70,8 +87,8 @@ TicketApp::TicketApp(QWidget *parent)
     nextQuestionButton_ = new QPushButton("Следующий вопрос", this);
     nextQuestionButton_->setEnabled(false);
 
-    progressBarTotal_ = new TotalProgressBar(this); // Первый прогресс-бар
-    progressBarGreen_ = new GreenProgressBar(this); // Второй прогресс-бар
+    progressBarTotal_ = new TotalProgressBar(this);
+    progressBarGreen_ = new GreenProgressBar(this);
 
     ticketTable_ = new QTableWidget(this);
     ticketTable_->setColumnCount(3);
@@ -126,7 +143,7 @@ void TicketApp::onGenerateTickets() {
     QuestionViewGroup_->ticketNumber_->setText("Номер билета: ");
     QuestionViewGroup_->ticketName_->setText("Название: ");
     QuestionViewGroup_->chosenTicket_ = 0;
-    QuestionViewGroup_->stackChosen.clear();
+    QuestionViewGroup_->stackChosen.stackClear();
 
     ticketTable_->setRowCount(totalTickets_);
     for (int i = 0; i < totalTickets_; ++i) {
@@ -154,7 +171,8 @@ void TicketApp::resetTickets() {
     QuestionViewGroup_->ticketNumber_->setText("Номер билета: ");
     QuestionViewGroup_->ticketName_->setText("Название: ");
     QuestionViewGroup_->chosenTicket_ = 0;
-    QuestionViewGroup_->stackChosen.clear();
+    QuestionViewGroup_->stackChosen.currentPosition = QuestionViewGroup_->stackChosen.size() - 1;
+    QuestionViewGroup_->stackChosen.lastResetPosition = QuestionViewGroup_->stackChosen.size() - 1;
 
     for (int i = 0; i < totalTickets_; ++i) {
         QTableWidgetItem *statusItem = new QTableWidgetItem("Не начато");
@@ -285,54 +303,85 @@ void TicketApp::onChangeStatusThroughComboBox() {
 }
 
 void TicketApp::toNextTicket() {
-    QVector<int> availableTickets;
+    int cntAvalible = 0;
 
     for (int i = 0; i < totalTickets_; ++i) {
         if (ticketTable_->item(i, 1)->text() != "Завершено") {
-            availableTickets.append(i);
+            cntAvalible++;
         }
     }
 
-    if (availableTickets.size() == 1) {
-        int position = availableTickets[0];
-        QuestionViewGroup_->setTicketInfo(position + 1, ticketTable_->item(position, 0)->text(),
-                                 ticketTable_->item(position, 1)->text());
-        ticketTable_->selectRow(position);
-    } else if (availableTickets.size() == 0) {
-        nextQuestionButton_->setEnabled(false);
-    } else {
-        int randomValue = QRandomGenerator::global()->bounded(0, totalTickets_ - greenProgress_);
-        int position = availableTickets[randomValue];
-		if (position == QuestionViewGroup_->chosenTicket_ - 1) {
-            position++;
-            if (position == availableTickets.size()) {
-                position = 0;
+    if (cntAvalible == 1) {
+        int position = -1;
+        for (int i = 0; i < totalTickets_; ++i) {
+            if (ticketTable_->item(i, 1)->text() != "Завершено") {
+                position = i;
+                break;
             }
         }
-        QuestionViewGroup_->setTicketInfo(position + 1, ticketTable_->item(position, 0)->text(),
-                                 ticketTable_->item(position, 1)->text());
-        ticketTable_->selectRow(position);
+
+
+        if (position != -1) {
+            QuestionViewGroup_->stackChosen.currentPosition = QuestionViewGroup_->stackChosen.size();
+            QuestionViewGroup_->setTicketInfo(position + 1,
+                                              ticketTable_->item(position, 0)->text(),
+                                              ticketTable_->item(position, 1)->text());
+            if (QuestionViewGroup_->stackChosen.currentPosition - QuestionViewGroup_->stackChosen.lastResetPosition > 1) {
+                prevQuestionButton_->setEnabled(true);
+            }
+            ticketTable_->selectRow(position);
+        } else {
+            qDebug() << "Ошибка: не найден единственный доступный билет!";
+        }
+
+    } else if (cntAvalible == 0) {
+        nextQuestionButton_->setEnabled(false);
+
+    } else {
+        QVector<int> availableTickets;
+        for (int i = 0; i < totalTickets_; ++i) {
+            if (ticketTable_->item(i, 1)->text() != "Завершено" &&
+                QuestionViewGroup_->chosenTicket_ - 1 != i) {
+                availableTickets.append(i);
+            }
+        }
+
+        if (!availableTickets.isEmpty()) {
+            int randomValue = QRandomGenerator::global()->bounded(availableTickets.size());
+            int position = availableTickets[randomValue];
+
+
+            ticketTable_->selectRow(position);
+            QuestionViewGroup_->stackChosen.currentPosition = QuestionViewGroup_->stackChosen.size();
+            QuestionViewGroup_->setTicketInfo(position + 1,
+                                              ticketTable_->item(position, 0)->text(),
+                                              ticketTable_->item(position, 1)->text());
+            if (QuestionViewGroup_->stackChosen.currentPosition - QuestionViewGroup_->stackChosen.lastResetPosition > 1) {
+                prevQuestionButton_->setEnabled(true);
+            }
+        } else {
+            qDebug() << "Ошибка: нет доступных билетов для выбора!";
+        }
     }
 }
 
 void TicketApp::toPrevTicket() {
-    int to = QuestionViewGroup_->stackChosen[QuestionViewGroup_->stackChosen.size() - 1];
-    for (size_t i = QuestionViewGroup_->stackChosen.size() - 1; i >= 0; i--) {
-        if (QuestionViewGroup_->stackChosen[i] != QuestionViewGroup_->chosenTicket_) {
-            to = QuestionViewGroup_->stackChosen[i];
-            break;
-        }
-    }
+    QuestionViewGroup_->stackChosen.currentPosition--;
+    int to = QuestionViewGroup_->stackChosen.getStackElement(QuestionViewGroup_->stackChosen.currentPosition);
     QuestionViewGroup_->setTicketInfo(to, ticketTable_->item(to - 1, 0)->text(),
                                           ticketTable_->item(to - 1, 1)->text());
     ticketTable_->selectRow(to - 1);
+    if (QuestionViewGroup_->stackChosen.currentPosition - QuestionViewGroup_->stackChosen.lastResetPosition <= 1) {
+        prevQuestionButton_->setEnabled(false);
+    }
 }
 
 void TicketApp::onTicketSelected(int row, int column) {
     QString ticketName = ticketTable_->item(row, 0)->text();
     QString ticketStatus = ticketTable_->item(row, 1)->text();
+    QuestionViewGroup_->stackChosen.currentPosition = QuestionViewGroup_->stackChosen.size();
     QuestionViewGroup_->setTicketInfo(row + 1, ticketName, ticketStatus);
-    if (QuestionViewGroup_->stackChosen.size() >= 2) {
+    if (QuestionViewGroup_->stackChosen.currentPosition - QuestionViewGroup_->stackChosen.lastResetPosition > 1) {
         prevQuestionButton_->setEnabled(true);
     }
 }
@@ -341,9 +390,12 @@ void QuestionViewGroupBox::setTicketInfo(int number, QString name, QString statu
     ticketNameEdit_->clear();
     ticketNumber_->setText("Номер билета: " + QString::number(number));
     ticketName_->setText("Название: " + name);
+    ticketNameEdit_->setText(name);
     ticketBoxStatus_->setCurrentText(status);
     chosenTicket_ = number;
-    stackChosen.append(chosenTicket_);
+    if (stackChosen.size() - 1 == stackChosen.lastResetPosition  || number != stackChosen.getStackElement(stackChosen.size() - 1)) {
+        stackChosen.stackPush(chosenTicket_);
+    }
 }
 
 void TicketApp::onUpdateTicketName() {
