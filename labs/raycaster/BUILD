@@ -6,13 +6,15 @@ qt_cc_library(
         "mainwindow.cpp",
         "ray.cpp",
         "polygon.cpp",
-        "controller.cpp"
+        "controller.cpp",
+        "canva.cpp"
     ],
     hdrs = [
         "mainwindow.h",
         "ray.h",
         "polygon.h",
-        "controller.h"
+        "controller.h",
+        "canva.h"
     ],
     deps = [
         "@rules_qt//:qt_core",

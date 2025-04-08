@@ -1,20 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QKeyEvent>
-#include <QMouseEvent>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QPaintEvent>
 #include <QRadioButton>
 #include <QButtonGroup>
-#include <QVector>
 #include <QWidget>
-#include <optional>
-#include <vector>
-#include <QDebug>
+#include <QVBoxLayout>
 
 #include "controller.h"
+#include "canva.h"
 
 class MainWindow : public QWidget {
     Q_OBJECT
@@ -31,10 +24,12 @@ private:
     enum class Mode { Polygons, Light };
 
     Mode mode_ = Mode::Polygons;
-   // QPixmap canvas;
+    Canva* canva_ = nullptr;
     QButtonGroup *ModeButtonGroup_ = nullptr;
     QRadioButton *PolygonsButton_ = nullptr;
     QRadioButton *LightButton_ = nullptr;
+    QVBoxLayout *layout = nullptr;
+    QHBoxLayout *mode_layout = nullptr;
 };
 
 #endif // MAINWINDOW_H

@@ -5,6 +5,8 @@
 
 class Ray {
 public:
+    Ray() = default;
+
     Ray(const QPointF &begin, const QPointF &end, double angle = 0.0);
 
     [[nodiscard]] QPointF GetBegin() const;
@@ -26,5 +28,7 @@ private:
     QPointF end_;
     double angle_;
 };
+
+double Dst(QPointF a, QPointF b);
 
 #endif //RAY_H

@@ -17,6 +17,16 @@ public:
 
     void SetLightSource(const QPointF &light_source);
 
+    void ClearPolygons();
+
+    std::vector<Ray> CastRays();
+
+    void IntersectRays(std::vector<Ray>* rays);
+
+    void RemoveAdjacentRays(std::vector<Ray> *rays) const;
+
+    Polygon CreateLightArea();
+
 private:
     std::vector<Polygon> polygons_ = {};
     QPointF light_source_ = QPointF(0, 0);
