@@ -89,24 +89,45 @@ void Canva::renderImage() {
     drawPolygons();
     if (mode_ == Mode::Light) {
         QPointF cursorPos = mapToScene(mapFromGlobal(QCursor::pos()));
-            controller_.SetLightSource(cursorPos);
-            lightSourceItem_ = scene_->addEllipse(-5, -5, 10, 10, QPen(Qt::red), QBrush(Qt::red));
-            lightSourceItem_->setPos(cursorPos);
-            lightSourceItem_->setVisible(true);
-            std::vector<Ray> rays = controller_.CastRays();
-            controller_.IntersectRays(&rays);
-            controller_.RemoveAdjacentRays(&rays);
-            Polygon lightArea = controller_.CreateLightArea();
+        controller_.SetLightSource(cursorPos);
+        controller_.SetLightSources();
+
+        lightSourceItem_ = scene_->addEllipse(-5, -5, 3, 3, QPen(QColor(255, 140, 0, 255)),
+                                              QBrush(QColor(255, 140, 0, 255)));
+        lightSourceItem_->setPos(cursorPos);
+        lightSourceItem_->setVisible(true);
+
+        for (int i = 0; i < controller_.GetLightSources().size(); i++) {
+            lightSourceItems_.push_back(scene_->addEllipse(-5, -5, 3, 3, QPen(QColor(255, 140, 0, 255)),
+                                                           QBrush(QColor(255, 140, 0, 255))));
+            lightSourceItems_.back()->setPos(controller_.GetLightSources()[i]);
+            lightSourceItems_.back()->setVisible(true);
+        }
+        /* std::vector<Ray> rays = controller_.CastRays();
+         controller_.IntersectRays(&rays);
+         controller_.RemoveAdjacentRays(&rays);*/
+
+        /* for (const auto &ray: rays) {
+             qDebug() << "{" << ray.GetEnd().x() << " " << ray.GetEnd().y() << "} ";
+         }
+         qDebug() << "\n";*/
+
+        Polygon lightArea = controller_.CreateLightArea(controller_.GetLightSource());
+        renderLightArea(lightArea);
+        for (int i = 0; i < controller_.GetLightSources().size(); i++) {
+            lightArea = controller_.CreateLightArea(controller_.GetLightSources()[i]);
             renderLightArea(lightArea);
-            for (auto ray: rays) {
-                scene_->addLine(ray.GetBegin().x(), ray.GetBegin().y(), ray.GetEnd().x(), ray.GetEnd().y(), QPen(Qt::darkRed));
-            }
+        }
+        /*for (auto ray: rays) {
+            scene_->addLine(ray.GetBegin().x(), ray.GetBegin().y(), ray.GetEnd().x(), ray.GetEnd().y(),
+                            QPen(Qt::darkRed));
+        }*/
     }
     timer_->start(1);
 }
 
-void Canva::renderLightArea(const Polygon& area) {
-    const std::vector<QPointF>& vertices = area.GetVertices();
+void Canva::renderLightArea(const Polygon &area) {
+    const std::vector<QPointF> &vertices = area.GetVertices();
     if (vertices.size() < 3) {
         return;
     }
@@ -119,8 +140,8 @@ void Canva::renderLightArea(const Polygon& area) {
 
     path.closeSubpath();
 
-    QGraphicsPathItem* light_item = new QGraphicsPathItem(path);
-    light_item->setBrush(QBrush(QColor(255, 255, 0, 100)));
-    light_item->setPen(QPen(Qt::yellow, 1));
+    QGraphicsPathItem *light_item = new QGraphicsPathItem(path);
+    light_item->setBrush(QBrush(QColor(139, 0, 0, 30)));
+    light_item->setPen(QPen(QColor(139, 0, 0, 30), 1));
     scene_->addItem(light_item);
 }

@@ -27,20 +27,21 @@ std::optional<QPointF> Polygon::IntersectRay(const Ray& ray) const {
         QPointF v1 = vertices_[i];
         QPointF v2 = (i + 1 == vertices_.size()) ? vertices_.front() : vertices_[i + 1];
         QPointF edge = v2 - v1;
+
+
         QPointF delta = v1 - rayBegin;
 
         double denom = rayDir.x() * edge.y() - rayDir.y() * edge.x();
         if (std::abs(denom) < 1e-10) {
-            continue; // Параллельные линии
+            continue;
         }
 
         double u = (delta.x() * edge.y() - delta.y() * edge.x()) / denom;
         double t = (delta.x() * rayDir.y() - delta.y() * rayDir.x()) / denom;
 
-        // Пересечение засчитывается, только если точка пересечения строго внутри отрезка (0 < t < 1)
-        const double epsilon = 1e-10; // Порог для численных погрешностей
-        if (u >= 0 && t > epsilon && t < 1.0 - epsilon) {
+        if (u >= 0 && t >= 0 && t <= 1) {
             QPointF intersection = rayBegin + u * rayDir;
+
             QPointF diff = intersection - rayBegin;
             double distance_squared = diff.x() * diff.x() + diff.y() * diff.y();
 

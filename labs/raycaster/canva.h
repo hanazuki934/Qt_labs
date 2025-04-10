@@ -36,6 +36,7 @@ private:
     QTimer* timer_;
     std::vector<QGraphicsLineItem *> currentPolygonLines_{};
     QGraphicsEllipseItem *lightSourceItem_ = nullptr;
+    std::vector<QGraphicsEllipseItem*> lightSourceItems_{};
 
     void drawPolygons() const;
 
