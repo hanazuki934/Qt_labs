@@ -24,9 +24,9 @@ public:
     [[nodiscard]] Ray Rotate(double delta_angle) const;
 
 private:
-    QPointF begin_;
-    QPointF end_;
-    double angle_;
+    QPointF begin_{};
+    QPointF end_{};
+    double angle_{};
 };
 
 double Dst(QPointF a, QPointF b);

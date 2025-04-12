@@ -3,18 +3,18 @@ load("@rules_qt//:qt.bzl", "qt_cc_binary", "qt_cc_library")
 qt_cc_library(
     name = "raycaster_lib",
     srcs = [
-        "mainwindow.cpp",
-        "ray.cpp",
-        "polygon.cpp",
-        "controller.cpp",
-        "canva.cpp"
+        "src/mainwindow.cpp",
+        "src/ray.cpp",
+        "src/polygon.cpp",
+        "src/controller.cpp",
+        "src/canva.cpp"
     ],
     hdrs = [
-        "mainwindow.h",
-        "ray.h",
-        "polygon.h",
-        "controller.h",
-        "canva.h"
+        "src/mainwindow.h",
+        "src/ray.h",
+        "src/polygon.h",
+        "src/controller.h",
+        "src/canva.h"
     ],
     deps = [
         "@rules_qt//:qt_core",
@@ -25,7 +25,7 @@ qt_cc_library(
 
 qt_cc_binary(
     name = "raycaster",
-    srcs = ["main.cpp"],
+    srcs = ["src/main.cpp"],
     deps = [
         ":raycaster_lib",
         "@rules_qt//:qt_core",

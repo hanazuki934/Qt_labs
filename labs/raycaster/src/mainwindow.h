@@ -21,15 +21,17 @@ protected:
 private:
     Controller controller_;
 
-    enum class Mode { Polygons, Light };
+    enum class Mode { Polygons, Light, StaticLights };
 
     Mode mode_ = Mode::Polygons;
     Canva* canva_ = nullptr;
     QButtonGroup *ModeButtonGroup_ = nullptr;
     QRadioButton *PolygonsButton_ = nullptr;
     QRadioButton *LightButton_ = nullptr;
+    QRadioButton *StaticLightsButton_ = nullptr;
     QVBoxLayout *layout = nullptr;
     QHBoxLayout *mode_layout = nullptr;
+
 };
 
 #endif // MAINWINDOW_H
