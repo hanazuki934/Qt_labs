@@ -1,129 +1,52 @@
-#ifndef EXPENCES_H
-#define EXPENCES_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QWidget>
-#include <QTableWidget>
-#include <QProgressBar>
-#include <QSpinBox>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QDateEdit>
-#include <QDialog>
-#include <QStatusBar>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
 #include <QLabel>
-#include <QTableWidgetItem>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QVBoxLayout>
 #include <QWidget>
-#include <QHeaderView>
-#include <QRandomGenerator>
-#include <QDebug>
 
-class ExpenceProgressBar : public QProgressBar
+class TaskSelectionWidget;
+
+class DuolinguoApp : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit ExpenceProgressBar(QWidget *parent = nullptr);
-    void updateProgress(double expence, double budget);
-};
-
-class ExpenceAddWindow : public QDialog {
-    Q_OBJECT
-
-public:
-    explicit ExpenceAddWindow(QWidget* parent = nullptr);
-    double getSum();
-    QString getCategory();
-    QDate getDate();
-    QString getInfo();
+    explicit DuolinguoApp(QWidget* parent = nullptr);
 
 private:
-    friend class ExpenceApp;
-
-    QLabel* infoLabel_;
-    QDoubleSpinBox* addSumSpinBox_;
-    QComboBox* addCategoryComboBox_;
-    QDateEdit* addDateEdit_;
-    QPushButton* addExpenceButton_;
-    QLineEdit* addInfoLineEdit_;
-    QGridLayout* mainLayout_;
+    QMenuBar* menu_bar_{};
+    QMenu* menu_{};
+    QVBoxLayout* main_layout_{};
+    QStackedWidget* stacked_widget_{};
+    TaskSelectionWidget* task_selection_widget_{};
+    QWidget* central_widget_{};
 };
 
-class ExpenceChangeWindow : public QDialog {
-    Q_OBJECT
-
-public:
-    explicit ExpenceChangeWindow(QWidget* parent = nullptr);
-    void setValues(int sum, int index, QDate date, QString info);
-    double getSum();
-    QString getCategory();
-    QDate getDate();
-    QString getInfo();
-
-private slots:
-    void onDeleteButtonClicked();
-
-signals:
-    void deleteRequested();
-
-private:
-    friend class ExpenceApp;
-
-    QVBoxLayout* mainLayout_;
-    QPushButton* confirmChangePushButton_;
-    QPushButton* deletePushButton_;
-    QGroupBox* changeExpenceGroupBox_;
-    QDoubleSpinBox* changeSumSpinBox_;
-    QComboBox* changeCategoryComboBox_;
-    QDateEdit* changeDateEdit_;
-    QLineEdit* changeInfoLineEdit_;
-};
-
-class ExpenceApp : public QWidget
+class TaskSelectionWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ExpenceApp(QWidget* parent = nullptr);
-
-private slots:
-    void onAddClicked();
-    void onExpenceSelected(int row, int column);
-    void onBudgetChanged(double value);
-    void changeExpence();
-    void clearExpences();
-    void onChooseSortComboBox();
+    explicit TaskSelectionWidget(QWidget* parent = nullptr);
+    QSize sizeHint() const override;
 
 private:
-    friend class ExpenceAddBox;
-    double budget_ = 0;
-    double budgetSpent_ = 0;
-    int totalExpences_ = 0;
-    QString sortType = {};
-
-    void sort();
-
-    QVBoxLayout* mainLayout_;
-
-    QPushButton* addPushButton_;
-
-    QTableWidget* expenceTable_;
-    ExpenceProgressBar* budgetSpentProgressBar_;
-    QStatusBar* operationStatusBar_;
-
-    QDoubleSpinBox* budgetSetSpinBox_;
-    QGroupBox* budgetSetGroupBox_;
-
-    QPushButton* changeExpenceButton_;
-    QPushButton* clearExpenceButton_;
-    QGroupBox* changeExpenceGroupBox_;
-
-    QComboBox* chooseSortComboBox_;
-    QGroupBox* sortGroupBox_;
+    QVBoxLayout* main_layout_{};
+    QLabel* task_choose_label_{};
+    QHBoxLayout* task_choose_layout_{};
+    QVBoxLayout* grammar_button_layout_{};
+    QLabel* task_grammar_label_{};
+    QPushButton* grammar_test_button_{};
+    QPushButton* grammar_gap_fill_button_{};
+    QVBoxLayout* translation_button_layout_{};
+    QLabel* task_translate_label_{};
+    QPushButton* translation_en_to_ru_button_{};
+    QPushButton* translation_ru_to_en_button_{};
 };
 
-#endif //EXPENCES_H
+#endif // MAINWINDOW_H
