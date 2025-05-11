@@ -1,4 +1,4 @@
-#include "expences.h"
+#include "mainwindow.h"
 
 ExpenceProgressBar::ExpenceProgressBar(QWidget *parent)
     : QProgressBar(parent) {

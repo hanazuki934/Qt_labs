@@ -1,7 +1,3 @@
-//
-// Created by andrei on 3/12/25.
-//
-
 #ifndef EXPENCES_H
 #define EXPENCES_H
 
