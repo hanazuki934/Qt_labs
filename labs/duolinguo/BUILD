@@ -7,13 +7,17 @@ qt_cc_library(
         "src/mainwindow.cpp",
         "src/grammarwidget.cpp",
         "src/statistics.cpp",
-        "src/translationwidget.cpp"
+        "src/translationwidget.cpp",
+        "src/grammarmodel.cpp",
+        "src/translationmodel.cpp"
     ],
     hdrs = ["src/controller.h",
             "src/mainwindow.h",
             "src/grammarwidget.h",
             "src/statistics.h",
-            "src/translationwidget.h"
+            "src/translationwidget.h",
+            "src/grammarmodel.h",
+            "src/translationmodel.h"
             ],
     deps = [
         "@rules_qt//:qt_core",

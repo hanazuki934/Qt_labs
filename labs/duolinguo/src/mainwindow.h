@@ -12,6 +12,7 @@
 #include <QWidget>
 
 #include "controller.h"
+#include "grammarwidget.h"
 
 class TaskSelectionWidget;
 
@@ -35,6 +36,8 @@ public:
 
 private slots:
     void showDifficultyDialog();
+    void HandleTaskSelection(int taskType);
+    void HandleExit();
 
 private:
     QMenuBar* menu_bar_{};
@@ -43,6 +46,7 @@ private:
     QVBoxLayout* main_layout_{};
     QStackedWidget* stacked_widget_{};
     TaskSelectionWidget* task_selection_widget_{};
+    GrammarTestWidget* grammar_test_widget_{};
     QWidget* central_widget_{};
 
     Controller controller_;
@@ -53,10 +57,28 @@ class TaskSelectionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit TaskSelectionWidget(QWidget* parent = nullptr);
+    enum TaskType {
+        GrammarTest,
+        GrammarGapFill,
+        TranslationEnToRu,
+        TranslationRuToEn
+    };
+
+    explicit TaskSelectionWidget(QWidget* parent = nullptr, Controller* controller = nullptr);
     [[nodiscard]] QSize sizeHint() const override;
 
+signals:
+    void taskSelected(int taskType);
+
+public slots:
+    void OnGrammarTestClicked();
+    void OnGrammarGapFillClicked();
+    void OnTranslationEnToRuClicked();
+    void OnTranslationRuToEnClicked();
+
 private:
+    Controller* controller_{};
+
     QVBoxLayout* main_layout_{};
     QLabel* task_choose_label_{};
     QHBoxLayout* task_choose_layout_{};
