@@ -1,15 +1,30 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QComboBox>
+#include <QDialog>
+#include <QFormLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenuBar>
-#include <QPushButton>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "controller.h"
+
 class TaskSelectionWidget;
+
+class DifficultyDialog : public QDialog {
+    Q_OBJECT
+public:
+    DifficultyDialog(QWidget* parent = nullptr);
+    QComboBox* difficulty_combo_box_{};
+
+private:
+    QFormLayout* layout_{};
+    QPushButton* ok_button_{};
+};
 
 class DuolinguoApp : public QMainWindow
 {
@@ -18,13 +33,19 @@ class DuolinguoApp : public QMainWindow
 public:
     explicit DuolinguoApp(QWidget* parent = nullptr);
 
+private slots:
+    void showDifficultyDialog();
+
 private:
     QMenuBar* menu_bar_{};
     QMenu* menu_{};
+    QAction* difficulty_action_{};
     QVBoxLayout* main_layout_{};
     QStackedWidget* stacked_widget_{};
     TaskSelectionWidget* task_selection_widget_{};
     QWidget* central_widget_{};
+
+    Controller controller_;
 };
 
 class TaskSelectionWidget : public QWidget
@@ -33,7 +54,7 @@ class TaskSelectionWidget : public QWidget
 
 public:
     explicit TaskSelectionWidget(QWidget* parent = nullptr);
-    QSize sizeHint() const override;
+    [[nodiscard]] QSize sizeHint() const override;
 
 private:
     QVBoxLayout* main_layout_{};

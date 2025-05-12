@@ -1,19 +1,38 @@
 #include "mainwindow.h"
 
+#include <QComboBox>
+#include <QFormLayout>
 #include <QHBoxLayout>
 #include <QMainWindow>
 #include <QSize>
 #include <QStackedWidget>
 #include <QWidget>
 
+#include <qdialog.h>
 #include <qnamespace.h>
 
-DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
+DifficultyDialog::DifficultyDialog(QWidget *parent) : QDialog(parent) {
+    setWindowTitle("Установить сложность");
+
+    setMinimumSize(340, 90);
+    layout_ = new QFormLayout(this);
+
+    difficulty_combo_box_ = new QComboBox(this);
+    difficulty_combo_box_->addItems({"Легкая", "Сложная"});
+    layout_->addRow("Сложность:", difficulty_combo_box_);
+
+    ok_button_ = new QPushButton("OK", this);
+    layout_->addRow(ok_button_);
+    connect(ok_button_, &QPushButton::clicked, this, &QDialog::accept);
+}
+
+DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent), difficulty_action_(menu_->addAction("Уровень сложности")) {
     menu_bar_ = new QMenuBar(this);
     menu_ = menu_bar_->addMenu("Настройки");
-    menu_->addAction("Уровень сложности");
     menu_->addAction("Статистика");
     setMenuBar(menu_bar_);
+
+    connect(difficulty_action_, &QAction::triggered, this, &DuolinguoApp::showDifficultyDialog);
 
     central_widget_ = new QWidget(this);
     main_layout_ = new QVBoxLayout(central_widget_);
@@ -27,6 +46,19 @@ DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
 
     stacked_widget_->setCurrentWidget(task_selection_widget_);
     adjustSize();
+}
+
+void DuolinguoApp::showDifficultyDialog() {
+    DifficultyDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        QString const selected_difficulty = dialog.difficulty_combo_box_->currentText();
+        if (selected_difficulty == "Легкая") {
+            controller_.SetDifficulty(Controller::DifficultyLevel::Easy);
+        } else {
+            controller_.SetDifficulty(Controller::DifficultyLevel::Hard);
+        }
+        //qDebug() << "Выбрана сложность:" << selected_difficulty;
+    }
 }
 
 TaskSelectionWidget::TaskSelectionWidget(QWidget *parent) : QWidget(parent), task_choose_layout_(new QHBoxLayout()),
