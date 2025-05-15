@@ -1,11 +1,11 @@
 #include "grammarwidget.h"
 
 #include <QMessageBox>
+#include <qpushbutton.h>
 #include <qtmetamacros.h>
 
-GrammarTestWidget::GrammarTestWidget(QWidget* parent, Controller* controller)
-    : QWidget(parent), controller_(controller)
-{
+GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
+    : QWidget(parent), controller_(controller) {
     layout_ = new QVBoxLayout(this);
     exit_button_ = new QPushButton("Выход", this);
     question_label_ = new QLabel(this);
@@ -29,21 +29,40 @@ GrammarTestWidget::GrammarTestWidget(QWidget* parent, Controller* controller)
     button_group_->addButton(option3_button_, 3);
     button_group_->addButton(option4_button_, 4);
 
-    //connect(button_group_, QOverload<int>::of(&QButtonGroup::buttonClicked), this, &GrammarTestWidget::onOptionClicked);
+    // Alternative Qt5-style syntax
+    connect(button_group_, &QButtonGroup::buttonClicked,
+            this, [this](QAbstractButton *button) {
+                int id = button_group_->id(button);
+                onOptionClicked(id);
+            });
     connect(exit_button_, &QPushButton::clicked, this, &GrammarTestWidget::OnExitClicked);
-
-    updateQuestion();
 }
 
-void GrammarTestWidget::updateQuestion()
-{
-   /* if (!controller_) return;
+void GrammarTestWidget::UpdateTest() {
+    test_stats_.Clear();
+    test_stats_.difficulty = controller_->GetDifficulty();
+    test_stats_.type = Controller::QuestionType::MultipleChoice;
+    ToNextQuestion();
+}
 
-    current_question_ = controller_->getNextGrammarQuestion(Controller::QuestionType::MultipleChoice);
+void GrammarTestWidget::ToNextQuestion() {
+    if (test_stats_.questionsAnswered == 5) {
+        OnExitClicked();
+        return;
+    }
+    current_question_ = controller_->GetNextGrammarQuestion(Controller::QuestionType::MultipleChoice);
     question_label_->setText(current_question_.question);
 
-    if (current_question_.type != Controller::QuestionType::MultipleChoice) {
-        question_label_->setText("Этот вопрос не является тестом с вариантами ответа.");
+    qDebug() << "Получен вопрос из GetNextGrammarQuestion:";
+    qDebug() << "type:" << static_cast<int>(current_question_.type);
+    qDebug() << "question:" << current_question_.question;
+    qDebug() << "correct_answers:" << current_question_.correct_answers;
+    qDebug() << "options:" << current_question_.options;
+    qDebug() << "options size:" << current_question_.options.size();
+
+    if (current_question_.type != Controller::QuestionType::MultipleChoice || current_question_.options.size() < 4) {
+        question_label_->setText(
+            "Этот вопрос не является тестом с вариантами ответа или имеет неверное количество вариантов.");
         return;
     }
 
@@ -57,30 +76,41 @@ void GrammarTestWidget::updateQuestion()
     option2_button_->setChecked(false);
     option3_button_->setChecked(false);
     option4_button_->setChecked(false);
-    button_group_->setExclusive(true);*/
+    button_group_->setExclusive(true);
 }
 
-void GrammarTestWidget::onOptionClicked(int id)
-{
-  /*  QString selected_answer;
+void GrammarTestWidget::onOptionClicked(int id) {
+    QString selected_answer;
     switch (id) {
-    case 1: selected_answer = option1_button_->text(); break;
-    case 2: selected_answer = option2_button_->text(); break;
-    case 3: selected_answer = option3_button_->text(); break;
-    case 4: selected_answer = option4_button_->text(); break;
-    default: return;
+        case 1: selected_answer = option1_button_->text();
+            break;
+        case 2: selected_answer = option2_button_->text();
+            break;
+        case 3: selected_answer = option3_button_->text();
+            break;
+        case 4: selected_answer = option4_button_->text();
+            break;
+        default: return;
     }
 
-    bool is_correct = (selected_answer == current_question_.correct_answer);
+    bool is_correct = current_question_.correct_answers.contains(selected_answer);
 
-    QMessageBox::information(this, "Результат",
-                             is_correct ? "Правильно!" : "Неправильно. Правильный ответ: " + current_question_.correct_answer);
+    test_stats_.questionsAnswered++;
+    test_stats_.answers.append(is_correct ? 1 : 0);
 
-    updateQuestion();*/
+    /*QMessageBox::information(this, "Результат",
+                             is_correct ? "Правильно!" : "Неправильно. Правильный ответ: " + current_question_.correct_answers.first());*/
+
+    ToNextQuestion();
 }
 
-void GrammarTestWidget::OnExitClicked()
-{
+void GrammarTestWidget::OnExitClicked() {
+    int cnt_answered = 0;
+    for (auto i: test_stats_.answers) {
+        cnt_answered += (i == 1);
+    }
+    QMessageBox::information(this, "Результат",
+                             "Правильных ответов: " + QString::number(cnt_answered) + " из 5");
     emit exitRequested();
 }
 

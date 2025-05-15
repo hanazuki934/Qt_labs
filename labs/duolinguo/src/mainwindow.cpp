@@ -74,6 +74,7 @@ void DuolinguoApp::HandleTaskSelection(int taskType) {
     switch (taskType) {
         case TaskSelectionWidget::GrammarTest:
             stacked_widget_->setCurrentWidget(grammar_test_widget_);
+            grammar_test_widget_->UpdateTest();
             break;
         /*case TaskSelectionWidget::GrammarGapFill:
             if (grammar_gap_fill_widget_) {

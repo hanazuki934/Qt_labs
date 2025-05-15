@@ -16,6 +16,7 @@ class GrammarTestWidget : public QWidget {
 public:
     explicit GrammarTestWidget(QWidget *parent = nullptr, Controller *controller = nullptr);
 
+    void UpdateTest();
     [[nodiscard]] QSize sizeHint() const override;
 
 signals:
@@ -26,7 +27,7 @@ private slots:
     void OnExitClicked();
 
 private:
-    Controller *controller_;
+    Controller *controller_{};
 
     QLabel *question_label_{};
     QRadioButton *option1_button_{};
@@ -37,7 +38,13 @@ private:
     QPushButton *exit_button_{};
     QVBoxLayout *layout_{};
 
-    void updateQuestion();
+    Controller::GrammarQuestion question_{};
+
+    Controller::TestStats test_stats_{};
+
+    Controller::GrammarQuestion current_question_{};
+
+    void ToNextQuestion();
 };
 
 #endif // GRAMMARTESTWIDGET_H
