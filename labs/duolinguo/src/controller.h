@@ -9,6 +9,10 @@
 
 class Controller {
 public:
+    static constexpr int kGrammarTestDurationSeconds = 180;
+    static constexpr int kTranslateTestDurationSeconds = 600;
+
+
     enum class DifficultyLevel {
         Easy,
         Hard
@@ -63,6 +67,7 @@ public:
         QVector<AnswerType> answers{};
         QuestionType type{};
         DifficultyLevel difficulty{};
+        int timeElapsed = 0;
 
         void Clear();
     };
@@ -79,6 +84,7 @@ public:
     TranslationQuestion GetNextTranslationQuestion();
 
 private:
+
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
     QSqlDatabase grammar_test_hard_db_;

@@ -37,9 +37,12 @@ private:
     QRadioButton *option4_button_{};
     QButtonGroup *button_group_{};
     QPushButton *submit_button_{};
+    QLabel *timer_label_{};
     QPushButton *exit_button_{};
     QHBoxLayout *button_layout_{};
     QVBoxLayout *layout_{};
+
+    QTimer *timer_{};
 
     std::vector<Controller::GrammarQuestion> question_set_{};
     Controller::GrammarQuestion question_{};

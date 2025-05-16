@@ -360,5 +360,6 @@ void Controller::ShuffleOptions(GrammarQuestion &question) {
 
 void Controller::TestStats::Clear() {
     questionsAnswered = 0;
+    timeElapsed = 0;
     answers.clear();
 }

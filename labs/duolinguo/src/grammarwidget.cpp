@@ -2,7 +2,8 @@
 
 #include <QMessageBox>
 #include <QKeyEvent>
-#include <qpushbutton.h>
+#include <QPushButton>
+#include <QTimer>
 #include <qtmetamacros.h>
 
 GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
@@ -17,9 +18,11 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
 
     submit_button_ = new QPushButton("Следующий вопрос", this);
     exit_button_ = new QPushButton("Выход", this);
+    timer_label_ = new QLabel("Время: 00:00", this); // Начальное значение: 5 минут
 
     button_layout_ = new QHBoxLayout(this);
 
+    button_layout_->addWidget(timer_label_);
     button_layout_->addWidget(submit_button_);
     button_layout_->addWidget(exit_button_);
 
@@ -48,17 +51,40 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
             }
         });
     connect(exit_button_, &QPushButton::clicked, this, &GrammarTestWidget::OnExitClicked);
+
+    // Инициализация таймера с обратным отсчетом
+    timer_ = new QTimer(this);
+    connect(timer_, &QTimer::timeout, this, [this]() {
+        if (test_stats_.timeElapsed > 0) {
+            test_stats_.timeElapsed--;
+            int minutes = test_stats_.timeElapsed / 60;
+            int seconds = test_stats_.timeElapsed % 60;
+            timer_label_->setText(QString("Время: %1:%2")
+                                 .arg(minutes, 2, 10, QChar('0'))
+                                 .arg(seconds, 2, 10, QChar('0')));
+        } else {
+            timer_->stop();
+            timer_label_->setText("Время: 00:00");
+            QMessageBox::warning(this, "Время истекло", "Время теста закончилось!");
+            OnExitClicked(); // Завершаем тест
+        }
+    });
 }
 
 void GrammarTestWidget::UpdateTest() {
     test_stats_.Clear();
     test_stats_.difficulty = controller_->GetDifficulty();
     test_stats_.type = Controller::QuestionType::MultipleChoice;
+    test_stats_.timeElapsed = Controller::kGrammarTestDurationSeconds;
+    timer_label_->setText(QString("Время: %1:%2")
+                         .arg(test_stats_.timeElapsed / 60, 2, 10, QChar('0'))
+                         .arg(test_stats_.timeElapsed % 60, 2, 10, QChar('0')));
     question_set_.clear();
     test_stats_.answers.resize(5, Controller::AnswerType::NoAnswer);
-    for (int i = 0; i < 5; i ++) {
+    for (int i = 0; i < 5; i++) {
         question_set_.push_back(controller_->GetNextGrammarQuestion(Controller::QuestionType::MultipleChoice));
     }
+    timer_->start(1000); // Запускаем таймер
     ToNextQuestion();
 }
 
@@ -99,14 +125,10 @@ void GrammarTestWidget::ToNextQuestion() {
 void GrammarTestWidget::onOptionClicked(int id) {
     QString selected_answer;
     switch (id) {
-        case 1: selected_answer = option1_button_->text();
-            break;
-        case 2: selected_answer = option2_button_->text();
-            break;
-        case 3: selected_answer = option3_button_->text();
-            break;
-        case 4: selected_answer = option4_button_->text();
-            break;
+        case 1: selected_answer = option1_button_->text(); break;
+        case 2: selected_answer = option2_button_->text(); break;
+        case 3: selected_answer = option2_button_->text(); break;
+        case 4: selected_answer = option4_button_->text(); break;
         default: selected_answer = "~";
     }
 
@@ -115,19 +137,22 @@ void GrammarTestWidget::onOptionClicked(int id) {
     test_stats_.answers[test_stats_.questionsAnswered] = (is_correct ? Controller::AnswerType::Right : Controller::AnswerType::Wrong);
     test_stats_.questionsAnswered++;
 
-    /*QMessageBox::information(this, "Результат",
-                             is_correct ? "Правильно!" : "Неправильно. Правильный ответ: " + current_question_.correct_answers.first());*/
-
     ToNextQuestion();
 }
 
 void GrammarTestWidget::OnExitClicked() {
+    timer_->stop(); // Останавливаем таймер при выходе
     int cnt_answered = 0;
-    for (auto i: test_stats_.answers) {
+    for (auto i : test_stats_.answers) {
         cnt_answered += (i == Controller::AnswerType::Right);
     }
+    int minutes = test_stats_.timeElapsed / 60;
+    int seconds = test_stats_.timeElapsed % 60;
     QMessageBox::information(this, "Результат",
-                             "Правильных ответов: " + QString::number(cnt_answered) + " из 5");
+                             QString("Правильных ответов: %1 из 5\nОставшееся время: %2:%3")
+                             .arg(cnt_answered)
+                             .arg(minutes, 2, 10, QChar('0'))
+                             .arg(seconds, 2, 10, QChar('0')));
     emit exitRequested();
 }
 
@@ -138,7 +163,7 @@ QSize GrammarTestWidget::sizeHint() const {
 void GrammarTestWidget::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_H) {
         QMessageBox::information(this, "Подсказка",
-                             "Никто тебе не поможет!");
+                                 "Никто тебе не поможет!");
     }
     QWidget::keyPressEvent(event);
 }
