@@ -9,6 +9,7 @@
 #include <QButtonGroup>
 
 #include "controller.h"
+#include "progressbar.h"
 
 class GrammarTestWidget : public QWidget {
     Q_OBJECT
@@ -30,6 +31,7 @@ private slots:
 private:
     Controller *controller_{};
 
+    ProgressBar *progress_bar_{};
     QLabel *question_label_{};
     QRadioButton *option1_button_{};
     QRadioButton *option2_button_{};

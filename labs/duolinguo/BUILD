@@ -25,7 +25,8 @@ qt_cc_library(
         "src/statistics.cpp",
         "src/translationwidget.cpp",
         "src/grammarmodel.cpp",
-        "src/translationmodel.cpp"
+        "src/translationmodel.cpp",
+        "src/progressbar.cpp"
     ],
     hdrs = ["src/controller.h",
             "src/mainwindow.h",
@@ -33,7 +34,8 @@ qt_cc_library(
             "src/statistics.h",
             "src/translationwidget.h",
             "src/grammarmodel.h",
-            "src/translationmodel.h"
+            "src/translationmodel.h",
+            "src/progressbar.h"
             ],
     deps = [
         "@rules_qt//:qt_core",

@@ -14,7 +14,7 @@
 #include <qnamespace.h>
 #include <qtmetamacros.h>
 
-DifficultyDialog::DifficultyDialog(QWidget *parent) : QDialog(parent) {
+DifficultyDialog::DifficultyDialog(QWidget *parent, Controller::DifficultyLevel difficulty_level) : QDialog(parent) {
     setWindowTitle("Установить сложность");
 
     setMinimumSize(340, 90);
@@ -23,6 +23,7 @@ DifficultyDialog::DifficultyDialog(QWidget *parent) : QDialog(parent) {
     difficulty_combo_box_ = new QComboBox(this);
     difficulty_combo_box_->addItems({"Легкая", "Сложная"});
     layout_->addRow("Сложность:", difficulty_combo_box_);
+    difficulty_combo_box_->setCurrentText(difficulty_level == Controller::DifficultyLevel::Easy ? "Легкая" : "Сложная");
 
     ok_button_ = new QPushButton("OK", this);
     layout_->addRow(ok_button_);
@@ -58,7 +59,7 @@ DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
 }
 
 void DuolinguoApp::showDifficultyDialog() {
-    DifficultyDialog dialog(this);
+    DifficultyDialog dialog(this, controller_.GetDifficulty());
     if (dialog.exec() == QDialog::Accepted) {
         QString const selected_difficulty = dialog.difficulty_combo_box_->currentText();
         if (selected_difficulty == "Легкая") {

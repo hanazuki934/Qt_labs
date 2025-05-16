@@ -19,7 +19,7 @@ class TaskSelectionWidget;
 class DifficultyDialog : public QDialog {
     Q_OBJECT
 public:
-    DifficultyDialog(QWidget* parent = nullptr);
+    DifficultyDialog(QWidget* parent = nullptr, Controller::DifficultyLevel difficulty_level = Controller::DifficultyLevel::Easy);
     QComboBox* difficulty_combo_box_{};
 
 private:

@@ -9,6 +9,9 @@
 GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
     : QWidget(parent), controller_(controller) {
     layout_ = new QVBoxLayout(this);
+
+    progress_bar_ = new ProgressBar(this);
+
     question_label_ = new QLabel(this);
     option1_button_ = new QRadioButton(this);
     option2_button_ = new QRadioButton(this);
@@ -18,7 +21,7 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
 
     submit_button_ = new QPushButton("Следующий вопрос", this);
     exit_button_ = new QPushButton("Выход", this);
-    timer_label_ = new QLabel("Время: 00:00", this); // Начальное значение: 5 минут
+    timer_label_ = new QLabel("Время: 03:00", this);
 
     button_layout_ = new QHBoxLayout(this);
 
@@ -26,6 +29,7 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
     button_layout_->addWidget(submit_button_);
     button_layout_->addWidget(exit_button_);
 
+    layout_->addWidget(progress_bar_);
     layout_->addWidget(question_label_);
     layout_->addWidget(option1_button_);
     layout_->addWidget(option2_button_);
@@ -75,15 +79,16 @@ void GrammarTestWidget::UpdateTest() {
     test_stats_.Clear();
     test_stats_.difficulty = controller_->GetDifficulty();
     test_stats_.type = Controller::QuestionType::MultipleChoice;
-    test_stats_.timeElapsed = Controller::kGrammarTestDurationSeconds;
+    test_stats_.timeElapsed = Controller::kGrammarTestDurationSeconds; // Устанавливаем начальное время (180 секунд)
     timer_label_->setText(QString("Время: %1:%2")
                          .arg(test_stats_.timeElapsed / 60, 2, 10, QChar('0'))
                          .arg(test_stats_.timeElapsed % 60, 2, 10, QChar('0')));
     question_set_.clear();
     test_stats_.answers.resize(5, Controller::AnswerType::NoAnswer);
-    for (int i = 0; i < 5; i++) {
-        question_set_.push_back(controller_->GetNextGrammarQuestion(Controller::QuestionType::MultipleChoice));
+    for (int i = 1; i <= 5; i++) {
+        question_set_.push_back(controller_->GetNextGrammarQuestion(i, Controller::QuestionType::MultipleChoice, test_stats_.difficulty));
     }
+    progress_bar_->setAnswers(test_stats_.answers);
     timer_->start(1000); // Запускаем таймер
     ToNextQuestion();
 }
@@ -120,6 +125,7 @@ void GrammarTestWidget::ToNextQuestion() {
     option3_button_->setChecked(false);
     option4_button_->setChecked(false);
     button_group_->setExclusive(true);
+    progress_bar_->setAnswers(test_stats_.answers);
 }
 
 void GrammarTestWidget::onOptionClicked(int id) {
@@ -127,7 +133,7 @@ void GrammarTestWidget::onOptionClicked(int id) {
     switch (id) {
         case 1: selected_answer = option1_button_->text(); break;
         case 2: selected_answer = option2_button_->text(); break;
-        case 3: selected_answer = option2_button_->text(); break;
+        case 3: selected_answer = option3_button_->text(); break;
         case 4: selected_answer = option4_button_->text(); break;
         default: selected_answer = "~";
     }
@@ -146,6 +152,7 @@ void GrammarTestWidget::OnExitClicked() {
     for (auto i : test_stats_.answers) {
         cnt_answered += (i == Controller::AnswerType::Right);
     }
+    test_stats_.rightAnswers = cnt_answered;
     int minutes = test_stats_.timeElapsed / 60;
     int seconds = test_stats_.timeElapsed % 60;
     QMessageBox::information(this, "Результат",
@@ -162,8 +169,8 @@ QSize GrammarTestWidget::sizeHint() const {
 
 void GrammarTestWidget::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_H) {
-        QMessageBox::information(this, "Подсказка",
-                                 "Никто тебе не поможет!");
+        QString hint = current_question_.hint.isEmpty() ? "Подсказка недоступна." : current_question_.hint;
+        QMessageBox::information(this, "Подсказка", hint);
     }
     QWidget::keyPressEvent(event);
 }

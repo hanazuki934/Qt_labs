@@ -11,7 +11,7 @@ class Controller {
 public:
     static constexpr int kGrammarTestDurationSeconds = 180;
     static constexpr int kTranslateTestDurationSeconds = 600;
-
+    static constexpr int kTestSize = 5;
 
     enum class DifficultyLevel {
         Easy,
@@ -30,12 +30,14 @@ public:
         QString question;
         QStringList correct_answers;
         QStringList options;
+        QString hint;
     };
 
     struct TranslationQuestion {
         QuestionType type{QuestionType::TranslationRuToEn};
         QString source_text;
         QStringList correct_translations;
+        QString hint;
     };
 
     enum class AnswerType {
@@ -64,10 +66,11 @@ public:
 
     struct TestStats {
         int questionsAnswered = 0;
-        QVector<AnswerType> answers{};
+        std::vector<AnswerType> answers{};
         QuestionType type{};
         DifficultyLevel difficulty{};
         int timeElapsed = 0;
+        int rightAnswers = 0;
 
         void Clear();
     };
@@ -80,11 +83,11 @@ public:
     void SetDifficulty(DifficultyLevel difficulty);
 
     bool InitializeDatabase(const QString& grammarTestEasyDbPath, const QString& grammarTestHardDbPath, const QString& translationDbPath);
-    GrammarQuestion GetNextGrammarQuestion(QuestionType type);
+    GrammarQuestion GetNextGrammarQuestion(int questionIndex, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
     TranslationQuestion GetNextTranslationQuestion();
+    void SendDataAboutTest(int id, QuestionType type, DifficultyLevel difficulty, TestStats& stats);
 
 private:
-
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
     QSqlDatabase grammar_test_hard_db_;
@@ -98,6 +101,15 @@ private:
     int currentTranslationRuToEnHardId_{1};
     int currentTranslationEnToRuEasyId_{1};
     int currentTranslationEnToRuHardId_{1};
+
+    std::vector<TestStats> grammar_test_easy_stats_{};
+    std::vector<TestStats> grammar_test_hard_stats_{};
+    std::vector<TestStats> grammar_gap_fill_easy_stats_{};
+    std::vector<TestStats> grammar_gap_fill_hard_stats_{};
+    std::vector<TestStats> translation_test_ru_to_en_easy_stats_{};
+    std::vector<TestStats> translation_test_ru_to_en_hard_stats_{};
+    std::vector<TestStats> translation_test_en_to_ru_easy_stats_{};
+    std::vector<TestStats> translation_test_en_to_ru_hard_stats_{};
 
     void ShuffleOptions(GrammarQuestion& question);
 };
