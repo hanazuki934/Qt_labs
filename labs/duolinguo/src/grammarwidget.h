@@ -32,6 +32,7 @@ private:
     Controller *controller_{};
 
     ProgressBar *progress_bar_{};
+    QLabel *test_number_{};
     QLabel *question_label_{};
     QRadioButton *option1_button_{};
     QRadioButton *option2_button_{};
@@ -41,6 +42,7 @@ private:
     QPushButton *submit_button_{};
     QLabel *timer_label_{};
     QPushButton *exit_button_{};
+    QHBoxLayout *test_layout_{};
     QHBoxLayout *button_layout_{};
     QVBoxLayout *layout_{};
 

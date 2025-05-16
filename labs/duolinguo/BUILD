@@ -5,12 +5,10 @@ genrule(
     name = "create_empty_dbs",
     srcs = [],
     outs = [
-        "data/grammartesthard.db",
         "data/translation.db",
     ],
     cmd = """
         mkdir -p $(RULEDIR)/data && \
-        touch $(location data/grammartesthard.db) && \
         touch $(location data/translation.db)
     """,
 )
@@ -44,7 +42,8 @@ qt_cc_library(
         "@rules_qt//:qt_sql",
     ],
     data = [
-        "src/db/grammartesteasy.db",  # Подключаем исходную БД
+        "src/db/grammartesteasy.db",
+        "src/db/grammartesthard.db",
     ],
 )
 

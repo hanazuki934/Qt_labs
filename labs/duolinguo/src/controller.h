@@ -12,6 +12,8 @@ public:
     static constexpr int kGrammarTestDurationSeconds = 180;
     static constexpr int kTranslateTestDurationSeconds = 600;
     static constexpr int kTestSize = 5;
+    static constexpr int kMistakesMax = 3;
+    static constexpr int kMark = 12;
 
     enum class DifficultyLevel {
         Easy,
@@ -72,6 +74,7 @@ public:
         int timeElapsed = 0;
         int rightAnswers = 0;
         int testId = 0;
+        int mistakes = 0;
 
         void Clear();
     };
@@ -83,15 +86,19 @@ public:
     [[nodiscard]] DifficultyLevel GetDifficulty() const;
     void SetDifficulty(DifficultyLevel difficulty);
 
+    [[nodiscard]] int GetBall() const;
+    void SetBall(int ball);
+
     bool InitializeDatabase(const QString& grammarTestEasyDbPath, const QString& grammarTestHardDbPath, const QString& translationDbPath);
     GrammarQuestion GetNextGrammarQuestion(int questionIndex, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
     TranslationQuestion GetNextTranslationQuestion();
-    bool RequestTest(QuestionType type, DifficultyLevel difficulty, TestStats& stats, std::vector<GrammarQuestion>& questions);
+    std::vector<GrammarQuestion> RequestGrammarQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
     void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats);
 
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
+    int ball_ = 0;
 
     int currentGrammarTestEasyId_{1};
     int currentGrammarTestHardId_{1};

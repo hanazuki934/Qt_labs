@@ -19,7 +19,6 @@ Controller::Controller(const QString &grammartesteasy_db_path,
 
     qDebug() << "Путь к базе данных:" << absolutePath;
 
-    // Инициализация статистики (только для легких вопросов)
     grammar_test_easy_stats_.resize(2);
 
     if (!InitializeDatabase(absolutePath, "", "")) {
@@ -129,6 +128,13 @@ void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty
             qDebug() << "Сохранена статистика для теста" << stats.testId;
         }
     }
+    if (stats.rightAnswers == kTestSize) {
+        if (difficulty_ == DifficultyLevel::Easy) {
+            ball_++;
+        } else {
+            ball_ += 2;
+        }
+    }
 }
 
 void Controller::TestStats::Clear() {
@@ -136,5 +142,79 @@ void Controller::TestStats::Clear() {
     timeElapsed = 0;
     rightAnswers = 0;
     testId = 0;
+    mistakes = 0;
     answers.clear();
+}
+
+std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
+    QuestionType type,
+    DifficultyLevel difficulty,
+    TestStats& stats)
+{
+    std::vector<GrammarQuestion> questions;
+    stats.Clear();
+    stats.type = type;
+    stats.difficulty = difficulty;
+    stats.testId = 0;
+    stats.answers.resize(kTestSize, AnswerType::NoAnswer);
+
+    // For now, only Easy difficulty is supported based on provided code
+    if (difficulty != DifficultyLevel::Easy) {
+        GrammarQuestion errorQuestion;
+        errorQuestion.question = "Сложные вопросы не поддерживаются";
+        questions.push_back(errorQuestion);
+        return questions;
+    }
+
+    // Determine which set of questions to use based on completed tests
+    int setIndex = 0;
+    bool allSetsCompleted = true;
+
+    // Check grammar_test_easy_stats_ for completed tests
+    for (size_t i = 0; i < grammar_test_easy_stats_.size(); ++i) {
+        if (grammar_test_easy_stats_[i].questionsAnswered < kTestSize) {
+            allSetsCompleted = false;
+            setIndex = i;
+            break;
+        }
+    }
+
+    // If all sets are completed, return -1 as testId
+    if (allSetsCompleted) {
+        stats.testId = -1;
+        GrammarQuestion errorQuestion;
+        errorQuestion.question = "Все наборы вопросов завершены";
+        questions.push_back(errorQuestion);
+        return questions;
+    }
+
+    // Calculate starting index for the question set
+    int start_index = setIndex * kTestSize + 1;
+
+    // Populate questions vector
+    for (int i = 0; i < kTestSize; ++i) {
+        GrammarQuestion question = GetNextGrammarQuestion(start_index + i, type, difficulty);
+        questions.push_back(question);
+    }
+
+    // Update testId in stats
+    stats.testId = setIndex + 1;
+
+    // Ensure grammar_test_easy_stats_ is large enough
+    if (static_cast<size_t>(stats.testId) > grammar_test_easy_stats_.size()) {
+        grammar_test_easy_stats_.resize(stats.testId);
+    }
+
+    qDebug() << "Generated question set for testId:" << stats.testId
+             << "with startIndex:" << start_index;
+
+    return questions;
+}
+
+int Controller::GetBall() const {
+    return ball_;
+}
+
+void Controller::SetBall(const int ball) {
+    ball_ = ball;
 }

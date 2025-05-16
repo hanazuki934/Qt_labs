@@ -66,6 +66,7 @@ public:
 
     explicit TaskSelectionWidget(QWidget* parent = nullptr, Controller* controller = nullptr);
     [[nodiscard]] QSize sizeHint() const override;
+    void UpdateBall();
 
 signals:
     void taskSelected(int taskType);
@@ -80,6 +81,7 @@ private:
     Controller* controller_{};
 
     QVBoxLayout* main_layout_{};
+    QLabel* label_ball_{};
     QLabel* task_choose_label_{};
     QHBoxLayout* task_choose_layout_{};
     QVBoxLayout* grammar_button_layout_{};

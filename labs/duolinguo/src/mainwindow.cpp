@@ -95,6 +95,8 @@ void DuolinguoApp::HandleTaskSelection(int taskType) {
 
 void DuolinguoApp::HandleExit() {
     stacked_widget_->setCurrentWidget(task_selection_widget_);
+    task_selection_widget_->UpdateBall();
+
 }
 
 TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller) : QWidget(parent),
@@ -102,6 +104,11 @@ TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller
     grammar_button_layout_(new QVBoxLayout()),
     translation_button_layout_(new QVBoxLayout()) {
     main_layout_ = new QVBoxLayout(this);
+
+    label_ball_ = new QLabel(this);
+    label_ball_->setText(QString("Общая оценка: %1 из %2").arg(controller_->GetBall()).arg(Controller::kMark));
+
+    main_layout_->addWidget(label_ball_);
 
     task_choose_label_ = new QLabel("Выберите задание:", this);
     task_choose_label_->setAlignment(Qt::AlignCenter);
@@ -141,6 +148,10 @@ TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller
             &TaskSelectionWidget::OnTranslationEnToRuClicked);
     connect(translation_ru_to_en_button_, &QPushButton::clicked, this,
             &TaskSelectionWidget::OnTranslationRuToEnClicked);
+}
+
+void TaskSelectionWidget::UpdateBall() {
+    label_ball_->setText(QString("Общая оценка: %1 из %2").arg(controller_->GetBall()).arg(Controller::kMark));
 }
 
 QSize TaskSelectionWidget::sizeHint() const {
