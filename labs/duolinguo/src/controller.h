@@ -71,6 +71,7 @@ public:
         DifficultyLevel difficulty{};
         int timeElapsed = 0;
         int rightAnswers = 0;
+        int testId = 0;
 
         void Clear();
     };
@@ -85,13 +86,12 @@ public:
     bool InitializeDatabase(const QString& grammarTestEasyDbPath, const QString& grammarTestHardDbPath, const QString& translationDbPath);
     GrammarQuestion GetNextGrammarQuestion(int questionIndex, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
     TranslationQuestion GetNextTranslationQuestion();
-    void SendDataAboutTest(int id, QuestionType type, DifficultyLevel difficulty, TestStats& stats);
+    bool RequestTest(QuestionType type, DifficultyLevel difficulty, TestStats& stats, std::vector<GrammarQuestion>& questions);
+    void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats);
 
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
-    QSqlDatabase grammar_test_hard_db_;
-    QSqlDatabase translation_db_;
 
     int currentGrammarTestEasyId_{1};
     int currentGrammarTestHardId_{1};

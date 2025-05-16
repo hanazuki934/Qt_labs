@@ -1,16 +1,15 @@
 load("@rules_qt//:qt.bzl", "qt_cc_binary", "qt_cc_library")
 
+# Создаем пустые файлы для других БД (если нужны)
 genrule(
-    name = "create_data_dir",
+    name = "create_empty_dbs",
     srcs = [],
     outs = [
-        "data/grammartesteasy.db",
         "data/grammartesthard.db",
         "data/translation.db",
     ],
     cmd = """
         mkdir -p $(RULEDIR)/data && \
-        touch $(location data/grammartesteasy.db) && \
         touch $(location data/grammartesthard.db) && \
         touch $(location data/translation.db)
     """,
@@ -28,20 +27,24 @@ qt_cc_library(
         "src/translationmodel.cpp",
         "src/progressbar.cpp"
     ],
-    hdrs = ["src/controller.h",
-            "src/mainwindow.h",
-            "src/grammarwidget.h",
-            "src/statistics.h",
-            "src/translationwidget.h",
-            "src/grammarmodel.h",
-            "src/translationmodel.h",
-            "src/progressbar.h"
-            ],
+    hdrs = [
+        "src/controller.h",
+        "src/mainwindow.h",
+        "src/grammarwidget.h",
+        "src/statistics.h",
+        "src/translationwidget.h",
+        "src/grammarmodel.h",
+        "src/translationmodel.h",
+        "src/progressbar.h"
+    ],
     deps = [
         "@rules_qt//:qt_core",
         "@rules_qt//:qt_gui",
         "@rules_qt//:qt_widgets",
         "@rules_qt//:qt_sql",
+    ],
+    data = [
+        "src/db/grammartesteasy.db",  # Подключаем исходную БД
     ],
 )
 
@@ -54,4 +57,5 @@ qt_cc_binary(
         "@rules_qt//:qt_widgets",
         "@rules_qt//:qt_sql",
     ],
+    data = [":create_empty_dbs"],
 )
