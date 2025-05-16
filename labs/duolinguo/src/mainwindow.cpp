@@ -68,6 +68,9 @@ void DuolinguoApp::showDifficultyDialog() {
             controller_.SetDifficulty(Controller::DifficultyLevel::Hard);
         }
     }
+    qDebug() << QString(controller_.GetDifficulty() == Controller::DifficultyLevel::Easy
+                            ? 'Установлена сложность: просто'
+                            : 'Установлена сложность: сложно');
 }
 
 void DuolinguoApp::HandleTaskSelection(int taskType) {
@@ -96,7 +99,6 @@ void DuolinguoApp::HandleTaskSelection(int taskType) {
 void DuolinguoApp::HandleExit() {
     stacked_widget_->setCurrentWidget(task_selection_widget_);
     task_selection_widget_->UpdateBall();
-
 }
 
 TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller) : QWidget(parent),

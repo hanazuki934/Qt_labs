@@ -98,6 +98,7 @@ public:
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
+    QSqlDatabase grammar_test_hard_db_;
     int ball_ = 0;
 
     int currentGrammarTestEasyId_{1};

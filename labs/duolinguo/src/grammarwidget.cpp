@@ -83,6 +83,7 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
 
 void GrammarTestWidget::UpdateTest() {
     test_stats_.Clear();
+    test_stats_.difficulty = controller_->GetDifficulty();
     question_set_.clear();
     question_set_ = controller_->RequestGrammarQuestionSet(Controller::QuestionType::MultipleChoice, test_stats_.difficulty, test_stats_);
     test_stats_.answers.resize(5, Controller::AnswerType::NoAnswer);

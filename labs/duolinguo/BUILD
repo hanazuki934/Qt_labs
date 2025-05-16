@@ -44,6 +44,12 @@ qt_cc_library(
     data = [
         "src/db/grammartesteasy.db",
         "src/db/grammartesthard.db",
+        "src/db/grammarquestioneasy.db",
+        "src/db/grammarquestionhard.db",
+        "src/db/translationentorueasy.db",
+        "src/db/translationentoruhard.db",
+        "src/db/translationrutoeneasy.db",
+        "src/db/translationrutoenhard.db",
     ],
 )
 

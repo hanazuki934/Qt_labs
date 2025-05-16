@@ -8,21 +8,26 @@
 #include <QSqlQuery>
 
 Controller::Controller(const QString &grammartesteasy_db_path,
-                      const QString &,
+                      const QString &grammartesthard_db_path,
                       const QString &)
 {
-    const QString dbPath = "labs/duolinguo/src/db/grammartesteasy.db";
+    const QString easyDbPath = "labs/duolinguo/src/db/grammartesteasy.db";
+    const QString hardDbPath = "labs/duolinguo/src/db/grammartesthard.db";
 
-    // Получаем абсолютный путь
-    QFileInfo dbFile(dbPath);
-    QString absolutePath = dbFile.absoluteFilePath();
+    // Получаем абсолютные пути
+    QFileInfo easyDbFile(easyDbPath);
+    QFileInfo hardDbFile(hardDbPath);
+    QString easyAbsolutePath = easyDbFile.absoluteFilePath();
+    QString hardAbsolutePath = hardDbFile.absoluteFilePath();
 
-    qDebug() << "Путь к базе данных:" << absolutePath;
+    qDebug() << "Путь к базе данных (Easy):" << easyAbsolutePath;
+    qDebug() << "Путь к базе данных (Hard):" << hardAbsolutePath;
 
     grammar_test_easy_stats_.resize(2);
+    grammar_test_hard_stats_.resize(2);
 
-    if (!InitializeDatabase(absolutePath, "", "")) {
-        qCritical() << "Не удалось инициализировать базу данных!";
+    if (!InitializeDatabase(easyAbsolutePath, hardAbsolutePath, "")) {
+        qCritical() << "Не удалось инициализировать базы данных!";
     }
 }
 
@@ -34,36 +39,70 @@ void Controller::SetDifficulty(DifficultyLevel difficulty) {
     difficulty_ = difficulty;
 }
 
+int Controller::GetBall() const {
+    return ball_;
+}
+
+void Controller::SetBall(const int ball) {
+    ball_ = ball;
+}
+
 bool Controller::InitializeDatabase(const QString &grammartesteasy_db_path,
-                                  const QString &,
-                                  const QString &)
+                                    const QString &grammartesthard_db_path,
+                                    const QString &)
 {
-    // Проверяем существование файла
-    QFileInfo dbFile(grammartesteasy_db_path);
-    if (!dbFile.exists()) {
-        qCritical() << "Файл базы данных не найден:" << grammartesteasy_db_path;
+    // Проверяем существование файлов баз данных
+    QFileInfo easyDbFile(grammartesteasy_db_path);
+    if (!easyDbFile.exists()) {
+        qCritical() << "Файл базы данных (Easy) не найден:" << grammartesteasy_db_path;
         return false;
     }
 
-    // Настройка подключения к БД
+    QFileInfo hardDbFile(grammartesthard_db_path);
+    if (!hardDbFile.exists()) {
+        qCritical() << "Файл базы данных (Hard) не найден:" << grammartesthard_db_path;
+        return false;
+    }
+
+    // Настройка подключения к базе данных Easy
     grammar_test_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_easy");
     grammar_test_easy_db_.setDatabaseName(grammartesteasy_db_path);
 
     if (!grammar_test_easy_db_.open()) {
-        qCritical() << "Ошибка открытия базы данных:" << grammar_test_easy_db_.lastError().text();
+        qCritical() << "Ошибка открытия базы данных (Easy):" << grammar_test_easy_db_.lastError().text();
         return false;
     }
 
-    // Проверяем наличие таблицы
-    QSqlQuery checkQuery(grammar_test_easy_db_);
-    if (!checkQuery.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='grammartesteasy_questions'") ||
-        !checkQuery.next()) {
+    // Проверяем наличие таблицы grammartesteasy_questions
+    QSqlQuery easyCheckQuery(grammar_test_easy_db_);
+    if (!easyCheckQuery.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='grammartesteasy_questions'") ||
+        !easyCheckQuery.next()) {
         qCritical() << "Таблица grammartesteasy_questions не найдена!";
         grammar_test_easy_db_.close();
         return false;
     }
 
-    qDebug() << "База данных успешно инициализирована";
+    // Настройка подключения к базе данных Hard
+    grammar_test_hard_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_hard");
+    grammar_test_hard_db_.setDatabaseName(grammartesthard_db_path);
+
+    if (!grammar_test_hard_db_.open()) {
+        qCritical() << "Ошибка открытия базы данных (Hard):" << grammar_test_hard_db_.lastError().text();
+        grammar_test_easy_db_.close();
+        return false;
+    }
+
+    // Проверяем наличие таблицы grammartesthard_questions
+    QSqlQuery hardCheckQuery(grammar_test_hard_db_);
+    if (!hardCheckQuery.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='grammartesthard_questions'") ||
+        !hardCheckQuery.next()) {
+        qCritical() << "Таблица grammartesthard_questions не найдена!";
+        grammar_test_easy_db_.close();
+        grammar_test_hard_db_.close();
+        return false;
+    }
+
+    qDebug() << "Базы данных успешно инициализированы";
     return true;
 }
 
@@ -72,24 +111,22 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int questionIndex
                                                              DifficultyLevel difficulty)
 {
     GrammarQuestion question;
+    question.type = type;
 
-    if (difficulty != DifficultyLevel::Easy) {
-        question.question = "Сложные вопросы не поддерживаются";
-        return question;
-    }
+    QSqlDatabase* db = (difficulty == DifficultyLevel::Easy) ? &grammar_test_easy_db_ : &grammar_test_hard_db_;
+    QString tableName = (difficulty == DifficultyLevel::Easy) ? "grammartesteasy_questions" : "grammartesthard_questions";
 
-    if (!grammar_test_easy_db_.isOpen()) {
+    if (!db->isOpen()) {
         question.question = "База данных не открыта";
         return question;
     }
 
-    QSqlQuery query(grammar_test_easy_db_);
-    query.prepare("SELECT question, correct_answers, option1, option2, option3, option4, hint "
-                  "FROM grammartesteasy_questions WHERE id = ?");
+    QSqlQuery query(*db);
+    query.prepare(QString("SELECT question, correct_answers, option1, option2, option3, option4, hint "
+                         "FROM %1 WHERE id = ?").arg(tableName));
     query.addBindValue(questionIndex);
 
     if (query.exec() && query.next()) {
-        question.type = type;
         question.question = query.value("question").toString();
         question.correct_answers = query.value("correct_answers").toString().split("|");
         question.hint = query.value("hint").toString();
@@ -114,36 +151,10 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int questionIndex
     return question;
 }
 
-void Controller::ShuffleOptions(GrammarQuestion &question) {
-    for (int i = question.options.size() - 1; i > 0; --i) {
-        int j = QRandomGenerator::global()->bounded(i + 1);
-        question.options.swapItemsAt(i, j);
-    }
-}
-
-void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats) {
-    if (difficulty == DifficultyLevel::Easy) {
-        if (stats.testId >= 1 && stats.testId <= grammar_test_easy_stats_.size()) {
-            grammar_test_easy_stats_[stats.testId - 1] = stats;
-            qDebug() << "Сохранена статистика для теста" << stats.testId;
-        }
-    }
-    if (stats.rightAnswers == kTestSize) {
-        if (difficulty_ == DifficultyLevel::Easy) {
-            ball_++;
-        } else {
-            ball_ += 2;
-        }
-    }
-}
-
-void Controller::TestStats::Clear() {
-    questionsAnswered = 0;
-    timeElapsed = 0;
-    rightAnswers = 0;
-    testId = 0;
-    mistakes = 0;
-    answers.clear();
+Controller::TranslationQuestion Controller::GetNextTranslationQuestion() {
+    TranslationQuestion question;
+    question.source_text = "Перевод не реализован";
+    return question;
 }
 
 std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
@@ -158,21 +169,17 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     stats.testId = 0;
     stats.answers.resize(kTestSize, AnswerType::NoAnswer);
 
-    // For now, only Easy difficulty is supported based on provided code
-    if (difficulty != DifficultyLevel::Easy) {
-        GrammarQuestion errorQuestion;
-        errorQuestion.question = "Сложные вопросы не поддерживаются";
-        questions.push_back(errorQuestion);
-        return questions;
-    }
+    // Определяем статистику и размер в зависимости от сложности
+    std::vector<TestStats>& statsVector = (difficulty == DifficultyLevel::Easy) ?
+        grammar_test_easy_stats_ : grammar_test_hard_stats_;
 
     // Determine which set of questions to use based on completed tests
     int setIndex = 0;
     bool allSetsCompleted = true;
 
-    // Check grammar_test_easy_stats_ for completed tests
-    for (size_t i = 0; i < grammar_test_easy_stats_.size(); ++i) {
-        if (grammar_test_easy_stats_[i].questionsAnswered < kTestSize) {
+    // Check stats for completed tests
+    for (size_t i = 0; i < statsVector.size(); ++i) {
+        if (statsVector[i].questionsAnswered < kTestSize) {
             allSetsCompleted = false;
             setIndex = i;
             break;
@@ -200,21 +207,49 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     // Update testId in stats
     stats.testId = setIndex + 1;
 
-    // Ensure grammar_test_easy_stats_ is large enough
-    if (static_cast<size_t>(stats.testId) > grammar_test_easy_stats_.size()) {
-        grammar_test_easy_stats_.resize(stats.testId);
+    // Ensure stats vector is large enough
+    if (static_cast<size_t>(stats.testId) > statsVector.size()) {
+        statsVector.resize(stats.testId);
     }
 
     qDebug() << "Generated question set for testId:" << stats.testId
-             << "with startIndex:" << start_index;
+             << "with startIndex:" << start_index
+             << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
 
     return questions;
 }
 
-int Controller::GetBall() const {
-    return ball_;
+void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats) {
+    std::vector<TestStats>& statsVector = (difficulty == DifficultyLevel::Easy) ?
+        grammar_test_easy_stats_ : grammar_test_hard_stats_;
+
+    if (stats.testId >= 1 && stats.testId <= static_cast<int>(statsVector.size())) {
+        statsVector[stats.testId - 1] = stats;
+        qDebug() << "Сохранена статистика для теста" << stats.testId
+                 << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
+    }
+
+    if (stats.rightAnswers == kTestSize) {
+        if (difficulty == DifficultyLevel::Easy) {
+            ball_++;
+        } else {
+            ball_ += 2;
+        }
+    }
 }
 
-void Controller::SetBall(const int ball) {
-    ball_ = ball;
+void Controller::ShuffleOptions(GrammarQuestion &question) {
+    for (int i = question.options.size() - 1; i > 0; --i) {
+        int j = QRandomGenerator::global()->bounded(i + 1);
+        question.options.swapItemsAt(i, j);
+    }
+}
+
+void Controller::TestStats::Clear() {
+    questionsAnswered = 0;
+    timeElapsed = 0;
+    rightAnswers = 0;
+    testId = 0;
+    mistakes = 0;
+    answers.clear();
 }
