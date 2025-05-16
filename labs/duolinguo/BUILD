@@ -4,12 +4,14 @@ genrule(
     name = "create_data_dir",
     srcs = [],
     outs = [
-        "data/grammar.db",
+        "data/grammartesteasy.db",
+        "data/grammartesthard.db",
         "data/translation.db",
     ],
     cmd = """
         mkdir -p $(RULEDIR)/data && \
-        touch $(location data/grammar.db) && \
+        touch $(location data/grammartesteasy.db) && \
+        touch $(location data/grammartesthard.db) && \
         touch $(location data/translation.db)
     """,
 )

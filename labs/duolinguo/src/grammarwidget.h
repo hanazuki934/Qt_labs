@@ -25,6 +25,7 @@ signals:
 private slots:
     void onOptionClicked(int id);
     void OnExitClicked();
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     Controller *controller_{};
@@ -35,9 +36,12 @@ private:
     QRadioButton *option3_button_{};
     QRadioButton *option4_button_{};
     QButtonGroup *button_group_{};
+    QPushButton *submit_button_{};
     QPushButton *exit_button_{};
+    QHBoxLayout *button_layout_{};
     QVBoxLayout *layout_{};
 
+    std::vector<Controller::GrammarQuestion> question_set_{};
     Controller::GrammarQuestion question_{};
 
     Controller::TestStats test_stats_{};

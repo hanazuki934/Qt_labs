@@ -111,6 +111,8 @@ TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller
     task_grammar_label_->setAlignment(Qt::AlignCenter);
     grammar_test_button_ = new QPushButton("Тест", this);
     grammar_gap_fill_button_ = new QPushButton("Заполнение пропусков", this);
+    grammar_test_button_->setMinimumSize(QSize(200, 35));
+    grammar_gap_fill_button_->setMinimumSize(QSize(200, 35));
     grammar_button_layout_->addWidget(task_grammar_label_);
     grammar_button_layout_->addWidget(grammar_test_button_);
     grammar_button_layout_->addWidget(grammar_gap_fill_button_);
@@ -122,6 +124,8 @@ TaskSelectionWidget::TaskSelectionWidget(QWidget *parent, Controller *controller
     task_translate_label_->setAlignment(Qt::AlignCenter);
     translation_en_to_ru_button_ = new QPushButton("Англ → Рус", this);
     translation_ru_to_en_button_ = new QPushButton("Рус → Англ", this);
+    translation_en_to_ru_button_->setMinimumSize(QSize(200, 35));
+    translation_ru_to_en_button_->setMinimumSize(QSize(200, 35));
     translation_button_layout_->addWidget(task_translate_label_);
     translation_button_layout_->addWidget(translation_en_to_ru_button_);
     translation_button_layout_->addWidget(translation_ru_to_en_button_);

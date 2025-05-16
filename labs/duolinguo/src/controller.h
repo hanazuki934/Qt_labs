@@ -15,10 +15,10 @@ public:
     };
 
     enum class QuestionType {
-        MultipleChoice,     // Тест с выбором ответа
-        GapFill,            // Вставка слов
-        TranslationRuToEn,  // Перевод: русский → английский
-        TranslationEnToRu   // Перевод: английский → русский
+        MultipleChoice,
+        GapFill,
+        TranslationRuToEn,
+        TranslationEnToRu
     };
 
     struct GrammarQuestion {
@@ -34,66 +34,64 @@ public:
         QStringList correct_translations;
     };
 
+    enum class AnswerType {
+        Right,
+        Wrong,
+        NoAnswer
+    };
+
     struct TotalStats {
-        // Общая статистика
-        int totalQuestionsAnswered = 0;         // Общее вопросов отвечено
-        int totalCorrectAnswers = 0;            // Правильных ответов
-        int totalIncorrectAnswers = 0;          // Неправильных ответов
-
-        // По грамматике
-        int grammarTotal = 0;                   // По грамматике всего
-        int grammarCorrect = 0;                 // Правильных ответов по грамматике
-        int grammarIncorrect = 0;               // Неправильных ответов по грамматике
-
-        // По переводу
-        int translationTotal = 0;               // По переводу всего
-        int translationCorrect = 0;             // Правильных ответов по переводу
-        int translationIncorrect = 0;           // Неправильных ответов по переводу
-
-        // По простым вопросам
-        int easyTotal = 0;                      // Простых всего
-        int easyCorrect = 0;                    // Правильных ответов простых
-        int easyIncorrect = 0;                  // Неправильных ответов простых
-
-        // По сложным вопросам
-        int hardTotal = 0;                      // Сложных всего
-        int hardCorrect = 0;                    // Правильных ответов сложных
-        int hardIncorrect = 0;                  // Неправильных ответов сложных
+        int totalQuestionsAnswered = 0;
+        int totalCorrectAnswers = 0;
+        int totalIncorrectAnswers = 0;
+        int grammarTotal = 0;
+        int grammarCorrect = 0;
+        int grammarIncorrect = 0;
+        int translationTotal = 0;
+        int translationCorrect = 0;
+        int translationIncorrect = 0;
+        int easyTotal = 0;
+        int easyCorrect = 0;
+        int easyIncorrect = 0;
+        int hardTotal = 0;
+        int hardCorrect = 0;
+        int hardIncorrect = 0;
     };
 
     struct TestStats {
         int questionsAnswered = 0;
-        QVector<int> answers{};
+        QVector<AnswerType> answers{};
         QuestionType type{};
         DifficultyLevel difficulty{};
 
         void Clear();
     };
 
-    Controller(const QString& grammarDbPath = "grammar.db",
+    Controller(const QString& grammarTestEasyDbPath = "grammartesteasy.db",
+               const QString& grammarTestHardDbPath = "grammarTestHard.db",
                const QString& translationDbPath = "translation.db");
 
     [[nodiscard]] DifficultyLevel GetDifficulty() const;
     void SetDifficulty(DifficultyLevel difficulty);
 
-    bool InitializeDatabase(const QString& grammarDbPath, const QString& translationDbPath);
+    bool InitializeDatabase(const QString& grammarTestEasyDbPath, const QString& grammarTestHardDbPath, const QString& translationDbPath);
     GrammarQuestion GetNextGrammarQuestion(QuestionType type);
     TranslationQuestion GetNextTranslationQuestion();
 
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
-    QSqlDatabase grammar_db_;  // База данных для грамматики
-    QSqlDatabase translation_db_;  // База данных для переводов
+    QSqlDatabase grammar_test_easy_db_;
+    QSqlDatabase grammar_test_hard_db_;
+    QSqlDatabase translation_db_;
 
-    // Поля для отслеживания текущих id вопросов для каждого типа и сложности
-    int currentGrammarTestEasyId_{1};  // Грамматика: тест, простые
-    int currentGrammarTestHardId_{1};  // Грамматика: тест, сложные
-    int currentGrammarGapFillEasyId_{1};  // Грамматика: вставка слов, простые
-    int currentGrammarGapFillHardId_{1};  // Грамматика: вставка слов, сложные
-    int currentTranslationRuToEnEasyId_{1};  // Перевод: русский → английский, простые
-    int currentTranslationRuToEnHardId_{1};  // Перевод: русский → английский, сложные
-    int currentTranslationEnToRuEasyId_{1};  // Перевод: английский → русский, простые
-    int currentTranslationEnToRuHardId_{1};  // Перевод: английский → русский, сложные
+    int currentGrammarTestEasyId_{1};
+    int currentGrammarTestHardId_{1};
+    int currentGrammarGapFillEasyId_{1};
+    int currentGrammarGapFillHardId_{1};
+    int currentTranslationRuToEnEasyId_{1};
+    int currentTranslationRuToEnHardId_{1};
+    int currentTranslationEnToRuEasyId_{1};
+    int currentTranslationEnToRuHardId_{1};
 
     void ShuffleOptions(GrammarQuestion& question);
 };

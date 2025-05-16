@@ -1,13 +1,13 @@
 #include "grammarwidget.h"
 
 #include <QMessageBox>
+#include <QKeyEvent>
 #include <qpushbutton.h>
 #include <qtmetamacros.h>
 
 GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
     : QWidget(parent), controller_(controller) {
     layout_ = new QVBoxLayout(this);
-    exit_button_ = new QPushButton("Выход", this);
     question_label_ = new QLabel(this);
     option1_button_ = new QRadioButton(this);
     option2_button_ = new QRadioButton(this);
@@ -15,12 +15,20 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
     option4_button_ = new QRadioButton(this);
     button_group_ = new QButtonGroup(this);
 
+    submit_button_ = new QPushButton("Следующий вопрос", this);
+    exit_button_ = new QPushButton("Выход", this);
+
+    button_layout_ = new QHBoxLayout(this);
+
+    button_layout_->addWidget(submit_button_);
+    button_layout_->addWidget(exit_button_);
+
     layout_->addWidget(question_label_);
     layout_->addWidget(option1_button_);
     layout_->addWidget(option2_button_);
     layout_->addWidget(option3_button_);
     layout_->addWidget(option4_button_);
-    layout_->addWidget(exit_button_);
+    layout_->addLayout(button_layout_);
     setLayout(layout_);
 
     button_group_->setExclusive(true);
@@ -29,12 +37,16 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
     button_group_->addButton(option3_button_, 3);
     button_group_->addButton(option4_button_, 4);
 
-    // Alternative Qt5-style syntax
-    connect(button_group_, &QButtonGroup::buttonClicked,
-            this, [this](QAbstractButton *button) {
-                int id = button_group_->id(button);
+    connect(submit_button_, &QPushButton::clicked,
+        this, [this]() {
+            QAbstractButton *selected_button = button_group_->checkedButton();
+            if (selected_button) {
+                int id = button_group_->id(selected_button);
                 onOptionClicked(id);
-            });
+            } else {
+                onOptionClicked(-1);
+            }
+        });
     connect(exit_button_, &QPushButton::clicked, this, &GrammarTestWidget::OnExitClicked);
 }
 
@@ -42,6 +54,11 @@ void GrammarTestWidget::UpdateTest() {
     test_stats_.Clear();
     test_stats_.difficulty = controller_->GetDifficulty();
     test_stats_.type = Controller::QuestionType::MultipleChoice;
+    question_set_.clear();
+    test_stats_.answers.resize(5, Controller::AnswerType::NoAnswer);
+    for (int i = 0; i < 5; i ++) {
+        question_set_.push_back(controller_->GetNextGrammarQuestion(Controller::QuestionType::MultipleChoice));
+    }
     ToNextQuestion();
 }
 
@@ -50,7 +67,7 @@ void GrammarTestWidget::ToNextQuestion() {
         OnExitClicked();
         return;
     }
-    current_question_ = controller_->GetNextGrammarQuestion(Controller::QuestionType::MultipleChoice);
+    current_question_ = question_set_[test_stats_.questionsAnswered];
     question_label_->setText(current_question_.question);
 
     qDebug() << "Получен вопрос из GetNextGrammarQuestion:";
@@ -90,13 +107,13 @@ void GrammarTestWidget::onOptionClicked(int id) {
             break;
         case 4: selected_answer = option4_button_->text();
             break;
-        default: return;
+        default: selected_answer = "~";
     }
 
     bool is_correct = current_question_.correct_answers.contains(selected_answer);
 
+    test_stats_.answers[test_stats_.questionsAnswered] = (is_correct ? Controller::AnswerType::Right : Controller::AnswerType::Wrong);
     test_stats_.questionsAnswered++;
-    test_stats_.answers.append(is_correct ? 1 : 0);
 
     /*QMessageBox::information(this, "Результат",
                              is_correct ? "Правильно!" : "Неправильно. Правильный ответ: " + current_question_.correct_answers.first());*/
@@ -107,7 +124,7 @@ void GrammarTestWidget::onOptionClicked(int id) {
 void GrammarTestWidget::OnExitClicked() {
     int cnt_answered = 0;
     for (auto i: test_stats_.answers) {
-        cnt_answered += (i == 1);
+        cnt_answered += (i == Controller::AnswerType::Right);
     }
     QMessageBox::information(this, "Результат",
                              "Правильных ответов: " + QString::number(cnt_answered) + " из 5");
@@ -116,4 +133,12 @@ void GrammarTestWidget::OnExitClicked() {
 
 QSize GrammarTestWidget::sizeHint() const {
     return {500, 250};
+}
+
+void GrammarTestWidget::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_H) {
+        QMessageBox::information(this, "Подсказка",
+                             "Никто тебе не поможет!");
+    }
+    QWidget::keyPressEvent(event);
 }
