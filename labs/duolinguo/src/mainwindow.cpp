@@ -67,7 +67,6 @@ void DuolinguoApp::showDifficultyDialog() {
         } else {
             controller_.SetDifficulty(Controller::DifficultyLevel::Hard);
         }
-        //qDebug() << "Выбрана сложность:" << selected_difficulty;
     }
 }
 
