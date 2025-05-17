@@ -10,6 +10,7 @@
 #include <QSize>
 #include <QStackedWidget>
 #include <QWidget>
+#include <QMessageBox>
 
 #include <qdialog.h>
 #include <qnamespace.h>
@@ -35,10 +36,11 @@ DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
     menu_bar_ = new QMenuBar(this);
     menu_ = menu_bar_->addMenu("Настройки");
     difficulty_action_ = menu_->addAction("Уровень сложности");
-    menu_->addAction("Статистика");
+    statistics_action_ = menu_->addAction("Статистика");
     setMenuBar(menu_bar_);
 
     connect(difficulty_action_, &QAction::triggered, this, &DuolinguoApp::showDifficultyDialog);
+    connect(statistics_action_, &QAction::triggered, this, &DuolinguoApp::showStatistics);
 
     central_widget_ = new QWidget(this);
     main_layout_ = new QVBoxLayout(central_widget_);
@@ -81,6 +83,11 @@ void DuolinguoApp::showDifficultyDialog() {
     qDebug() << QString(controller_.GetDifficulty() == Controller::DifficultyLevel::Easy
                             ? "Установлена сложность: просто"
                             : "Установлена сложность: сложно");
+}
+
+void DuolinguoApp::showStatistics() {
+    QString stats = controller_.GetTotalStats();
+    QMessageBox::information(this, "Общая статистика", stats);
 }
 
 void DuolinguoApp::HandleTaskSelection(int taskType) {

@@ -45,24 +45,6 @@ public:
         NoAnswer
     };
 
-    struct TotalStats {
-        int totalQuestionsAnswered = 0;
-        int totalCorrectAnswers = 0;
-        int totalIncorrectAnswers = 0;
-        int grammarTotal = 0;
-        int grammarCorrect = 0;
-        int grammarIncorrect = 0;
-        int translationTotal = 0;
-        int translationCorrect = 0;
-        int translationIncorrect = 0;
-        int easyTotal = 0;
-        int easyCorrect = 0;
-        int easyIncorrect = 0;
-        int hardTotal = 0;
-        int hardCorrect = 0;
-        int hardIncorrect = 0;
-    };
-
     struct TestStats {
         int questionsAnswered = 0;
         std::vector<AnswerType> answers{};
@@ -112,6 +94,8 @@ public:
     void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats &stats);
 
     [[nodiscard]] bool CheckAnswer(const QString &user_answer, const QStringList &correct_answers) const;
+
+    [[nodiscard]] QString GetTotalStats() const;
 
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};

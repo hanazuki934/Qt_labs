@@ -38,6 +38,7 @@ public:
 private slots:
     void showDifficultyDialog();
     void HandleTaskSelection(int taskType);
+    void showStatistics();
     void HandleExit();
 
 private:
@@ -51,6 +52,7 @@ private:
     GrammarQuestionWidget* grammar_gap_fill_widget_{};
     TranslationRuToEnWidget* translation_ru_to_en_widget_{};
     TranslationEnToRuWidget* translation_en_to_ru_widget_{};
+    QAction* statistics_action_{};
     QWidget* central_widget_{};
 
     Controller controller_;

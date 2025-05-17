@@ -688,3 +688,114 @@ bool Controller::CheckAnswer(const QString &user_answer, const QStringList &corr
 
     return false;
 }
+
+QString Controller::GetTotalStats() const {
+    struct TotalStats {
+        int totalQuestionsAnswered = 0;
+        int totalCorrectAnswers = 0;
+        int totalIncorrectAnswers = 0;
+        int grammarTotal = 0;
+        int grammarCorrect = 0;
+        int grammarIncorrect = 0;
+        int translationTotal = 0;
+        int translationCorrect = 0;
+        int translationIncorrect = 0;
+        int easyTotal = 0;
+        int easyCorrect = 0;
+        int easyIncorrect = 0;
+        int hardTotal = 0;
+        int hardCorrect = 0;
+        int hardIncorrect = 0;
+        int grammarEasyPoints = 0;
+        int grammarHardPoints = 0;
+        int translationEasyPoints = 0;
+        int translationHardPoints = 0;
+    } stats;
+
+    // Вспомогательная функция для обработки одного вектора статистики
+    auto processStatsVector = [&](const std::vector<TestStats>& statsVector, bool isGrammar, bool isEasy) {
+        for (const auto& test : statsVector) {
+            int correct = test.rightAnswers;
+            int incorrect = test.mistakes;
+            int answered = test.questionsAnswered;
+
+            stats.totalQuestionsAnswered += answered;
+            stats.totalCorrectAnswers += correct;
+            stats.totalIncorrectAnswers += incorrect;
+
+            if (isGrammar) {
+                stats.grammarTotal += answered;
+                stats.grammarCorrect += correct;
+                stats.grammarIncorrect += incorrect;
+            } else {
+                stats.translationTotal += answered;
+                stats.translationCorrect += correct;
+                stats.translationIncorrect += incorrect;
+            }
+
+            if (isEasy) {
+                stats.easyTotal += answered;
+                stats.easyCorrect += correct;
+                stats.easyIncorrect += incorrect;
+                // Подсчет баллов: 1 балл за тест с kTestSize правильных ответов
+                if (correct == kTestSize) {
+                    if (isGrammar) {
+                        stats.grammarEasyPoints += 1;
+                    } else {
+                        stats.translationEasyPoints += 1;
+                    }
+                }
+            } else {
+                stats.hardTotal += answered;
+                stats.hardCorrect += correct;
+                stats.hardIncorrect += incorrect;
+                // Подсчет баллов: 2 балла за тест с kTestSize правильных ответов
+                if (correct == kTestSize) {
+                    if (isGrammar) {
+                        stats.grammarHardPoints += 2;
+                    } else {
+                        stats.translationHardPoints += 2;
+                    }
+                }
+            }
+        }
+    };
+
+    // Обработка всех векторов статистики
+    processStatsVector(grammar_test_easy_stats_, true, true);
+    processStatsVector(grammar_test_hard_stats_, true, false);
+    processStatsVector(grammar_gap_fill_easy_stats_, true, true);
+    processStatsVector(grammar_gap_fill_hard_stats_, true, false);
+    processStatsVector(translation_test_ru_to_en_easy_stats_, false, true);
+    processStatsVector(translation_test_ru_to_en_hard_stats_, false, false);
+    processStatsVector(translation_test_en_to_ru_easy_stats_, false, true);
+    processStatsVector(translation_test_en_to_ru_hard_stats_, false, false);
+
+    // Формирование строки результата на русском языке
+    QString result;
+    result += QString("Общая статистика:\n");
+    result += QString("Всего вопросов отвечено: %1\n").arg(stats.totalQuestionsAnswered);
+    result += QString("Правильных ответов: %1\n").arg(stats.totalCorrectAnswers);
+    result += QString("Неправильных ответов: %1\n").arg(stats.totalIncorrectAnswers);
+    result += QString("\nГрамматические тесты:\n");
+    result += QString("Всего вопросов: %1\n").arg(stats.grammarTotal);
+    result += QString("Правильных ответов: %1\n").arg(stats.grammarCorrect);
+    result += QString("Неправильных ответов: %1\n").arg(stats.grammarIncorrect);
+    result += QString("Баллов за легкие грамматические тесты: %1\n").arg(stats.grammarEasyPoints);
+    result += QString("Баллов за сложные грамматические тесты: %1\n").arg(stats.grammarHardPoints);
+    result += QString("\nТесты на перевод:\n");
+    result += QString("Всего вопросов: %1\n").arg(stats.translationTotal);
+    result += QString("Правильных ответов: %1\n").arg(stats.translationCorrect);
+    result += QString("Неправильных ответов: %1\n").arg(stats.translationIncorrect);
+    result += QString("Баллов за легкие тесты на перевод: %1\n").arg(stats.translationEasyPoints);
+    result += QString("Баллов за сложные тесты на перевод: %1\n").arg(stats.translationHardPoints);
+    result += QString("\nПо уровню сложности:\n");
+    result += QString("Легкие тесты (всего вопросов): %1\n").arg(stats.easyTotal);
+    result += QString("Легкие тесты (правильных): %1\n").arg(stats.easyCorrect);
+    result += QString("Легкие тесты (неправильных): %1\n").arg(stats.easyIncorrect);
+    result += QString("Сложные тесты (всего вопросов): %1\n").arg(stats.hardTotal);
+    result += QString("Сложные тесты (правильных): %1\n").arg(stats.hardCorrect);
+    result += QString("Сложные тесты (неправильных): %1\n").arg(stats.hardIncorrect);
+
+    return result;
+}
