@@ -1,10 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <QString>
-#include <QStringList>
 #include <QVector>
-#include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 
 class Controller {
@@ -82,27 +79,39 @@ public:
     explicit Controller();
 
     [[nodiscard]] DifficultyLevel GetDifficulty() const;
+
     void SetDifficulty(DifficultyLevel difficulty);
 
     [[nodiscard]] int GetBall() const;
+
     void SetBall(int ball);
 
     bool InitializeDatabase(
-        const QString& grammar_test_easy_db_path,
-        const QString& grammar_test_hard_db_path,
-        const QString& grammar_question_easy_db_path,
-        const QString& grammar_question_hard_db_path,
-        const QString& translation_ru_to_en_easy_db_path,
-        const QString& translation_ru_to_en_hard_db_path,
-        const QString& translation_en_to_ru_easy_db_path,
-        const QString& translation_en_to_ru_hard_db_path
+        const QString &grammar_test_easy_db_path,
+        const QString &grammar_test_hard_db_path,
+        const QString &grammar_question_easy_db_path,
+        const QString &grammar_question_hard_db_path,
+        const QString &translation_ru_to_en_easy_db_path,
+        const QString &translation_ru_to_en_hard_db_path,
+        const QString &translation_en_to_ru_easy_db_path,
+        const QString &translation_en_to_ru_hard_db_path
     );
 
-    GrammarQuestion GetNextGrammarQuestion(int question_index, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
-    TranslationQuestion GetNextTranslationQuestion(int question_index, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
-    std::vector<GrammarQuestion> RequestGrammarQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
-    std::vector<TranslationQuestion> RequestTranslationQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
-    void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats);
+    GrammarQuestion GetNextGrammarQuestion(int question_index, QuestionType type,
+                                           DifficultyLevel difficulty = DifficultyLevel::Easy);
+
+    TranslationQuestion GetNextTranslationQuestion(int question_index, QuestionType type,
+                                                   DifficultyLevel difficulty = DifficultyLevel::Easy);
+
+    std::vector<GrammarQuestion> RequestGrammarQuestionSet(QuestionType type, DifficultyLevel difficulty,
+                                                           TestStats &stats);
+
+    std::vector<TranslationQuestion> RequestTranslationQuestionSet(QuestionType type, DifficultyLevel difficulty,
+                                                                   TestStats &stats);
+
+    void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats &stats);
+
+    [[nodiscard]] bool CheckAnswer(const QString &user_answer, const QStringList &correct_answers) const;
 
 private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
@@ -134,7 +143,7 @@ private:
     std::vector<TestStats> translation_test_en_to_ru_easy_stats_{};
     std::vector<TestStats> translation_test_en_to_ru_hard_stats_{};
 
-    void ShuffleOptions(GrammarQuestion& question);
+    void ShuffleOptions(GrammarQuestion &question);
 };
 
 #endif // CONTROLLER_H

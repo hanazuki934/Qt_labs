@@ -307,13 +307,7 @@ void GrammarQuestionWidget::onSubmitClicked() {
         user_answer = "~";
     }
 
-    bool is_correct = false;
-    for (const QString &correct_answer : current_question_.correct_answers) {
-        if (user_answer.compare(correct_answer, Qt::CaseInsensitive) == 0) {
-            is_correct = true;
-            break;
-        }
-    }
+    bool is_correct = controller_->CheckAnswer(user_answer, current_question_.correct_answers);
 
     test_stats_.answers[test_stats_.questionsAnswered] = (is_correct ? Controller::AnswerType::Right : Controller::AnswerType::Wrong);
     test_stats_.questionsAnswered++;

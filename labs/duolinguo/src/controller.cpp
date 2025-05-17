@@ -644,3 +644,47 @@ void Controller::TestStats::Clear() {
     mistakes = 0;
     answers.clear();
 }
+
+bool Controller::CheckAnswer(const QString &user_answer, const QStringList &correct_answers) const {
+    // Normalize user answer: keep only letters, convert to lowercase
+    QString normalized_user_answer = user_answer.toLower();
+    QStringList user_words;
+    QString current_word;
+    for (const QChar &c : normalized_user_answer) {
+        if (c.isLetter()) {
+            current_word += c;
+        } else if (!current_word.isEmpty()) {
+            user_words << current_word;
+            current_word.clear();
+        }
+    }
+    if (!current_word.isEmpty()) {
+        user_words << current_word;
+    }
+
+    // Check against each correct answer
+    for (const QString &correct_answer : correct_answers) {
+        // Normalize correct answer
+        QString normalized_correct_answer = correct_answer.toLower();
+        QStringList correct_words;
+        current_word.clear();
+        for (const QChar &c : normalized_correct_answer) {
+            if (c.isLetter()) {
+                current_word += c;
+            } else if (!current_word.isEmpty()) {
+                correct_words << current_word;
+                current_word.clear();
+            }
+        }
+        if (!current_word.isEmpty()) {
+            correct_words << current_word;
+        }
+
+        // Compare word lists
+        if (user_words == correct_words) {
+            return true;
+        }
+    }
+
+    return false;
+}

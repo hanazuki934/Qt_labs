@@ -114,17 +114,9 @@ void TranslationRuToEnWidget::onSubmitClicked() {
         return;
     }
 
-    bool is_correct = false;
-    for (const QString &correct_answer: current_question_.correct_translations) {
-        if (user_answer.compare(correct_answer, Qt::CaseInsensitive) == 0) {
-            is_correct = true;
-            break;
-        }
-    }
+    bool is_correct = controller_->CheckAnswer(user_answer, current_question_.correct_translations);
 
-    test_stats_.answers[test_stats_.questionsAnswered] = (is_correct
-                                                              ? Controller::AnswerType::Right
-                                                              : Controller::AnswerType::Wrong);
+    test_stats_.answers[test_stats_.questionsAnswered] = (is_correct ? Controller::AnswerType::Right : Controller::AnswerType::Wrong);
     test_stats_.questionsAnswered++;
     progress_bar_->setAnswers(test_stats_.answers);
     if (!is_correct) {
@@ -287,17 +279,9 @@ void TranslationEnToRuWidget::onSubmitClicked() {
         return;
     }
 
-    bool is_correct = false;
-    for (const QString &correct_answer: current_question_.correct_translations) {
-        if (user_answer.compare(correct_answer, Qt::CaseInsensitive) == 0) {
-            is_correct = true;
-            break;
-        }
-    }
+    bool is_correct = controller_->CheckAnswer(user_answer, current_question_.correct_translations);
 
-    test_stats_.answers[test_stats_.questionsAnswered] = (is_correct
-                                                              ? Controller::AnswerType::Right
-                                                              : Controller::AnswerType::Wrong);
+    test_stats_.answers[test_stats_.questionsAnswered] = (is_correct ? Controller::AnswerType::Right : Controller::AnswerType::Wrong);
     test_stats_.questionsAnswered++;
     progress_bar_->setAnswers(test_stats_.answers);
     if (!is_correct) {
