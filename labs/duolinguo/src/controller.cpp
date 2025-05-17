@@ -337,41 +337,61 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
     GrammarQuestion question;
     question.type = type;
 
-    QSqlDatabase *db = (difficulty == DifficultyLevel::Easy) ? &grammar_test_easy_db_ : &grammar_test_hard_db_;
-    QString table_name = (difficulty == DifficultyLevel::Easy)
-                             ? "grammartesteasy_questions"
-                             : "grammartesthard_questions";
+    // Determine which database to use based on question type and difficulty
+    QSqlDatabase *db = nullptr;
+    QString table_name;
 
-    if (!db->isOpen()) {
+    if (type == QuestionType::MultipleChoice) {
+        db = (difficulty == DifficultyLevel::Easy) ? &grammar_test_easy_db_ : &grammar_test_hard_db_;
+        table_name = (difficulty == DifficultyLevel::Easy) ? "grammartesteasy_questions" : "grammartesthard_questions";
+    } else { // GapFill
+        db = (difficulty == DifficultyLevel::Easy) ? &grammar_question_easy_db_ : &grammar_question_hard_db_;
+        table_name = (difficulty == DifficultyLevel::Easy) ? "grammarquestioneasy_questions" : "grammarquestionhard_questions";
+    }
+
+    if (!db || !db->isOpen()) {
         question.question = "Database not open";
         return question;
     }
 
     QSqlQuery query(*db);
-    query.prepare(QString("SELECT question, correct_answers, option1, option2, option3, option4, hint "
-        "FROM %1 WHERE id = ?").arg(table_name));
+
+    if (type == QuestionType::MultipleChoice) {
+        query.prepare(QString("SELECT question, correct_answers, option1, option2, option3, option4, hint "
+            "FROM %1 WHERE id = ?").arg(table_name));
+    } else { // GapFill
+        query.prepare(QString("SELECT question, correct_answers, hint "
+            "FROM %1 WHERE id = ?").arg(table_name));
+    }
+
     query.addBindValue(question_index);
 
     if (query.exec() && query.next()) {
         question.question = query.value("question").toString();
-        question.correct_answers = query.value("correct_answers").toString().split("|");
+        question.correct_answers = query.value("correct_answers").toString().split("|", Qt::SkipEmptyParts);
         question.hint = query.value("hint").toString();
 
-        // Collect answer options
-        for (int i = 1; i <= 4; ++i) {
-            QString opt = query.value("option" + QString::number(i)).toString();
-            if (!opt.isEmpty()) {
-                question.options << opt;
-            }
-        }
-
-        // Shuffle options for multiple choice questions
+        // For MultipleChoice questions, collect and shuffle options
         if (type == QuestionType::MultipleChoice) {
+            // Collect answer options
+            for (int i = 1; i <= 4; ++i) {
+                QString opt = query.value("option" + QString::number(i)).toString();
+                if (!opt.isEmpty() && opt != "null") {
+                    question.options << opt;
+                }
+            }
+
+            // Shuffle options for multiple choice questions
             ShuffleOptions(question);
+        } else {
+            // For GapFill questions, we might want to include some common options
+            // or leave options empty for free-form answer
+            question.options.clear();
         }
     } else {
-        question.question = "Question not found";
+        question.question = "Question not found or query error";
         qDebug() << "Query error:" << query.lastError().text();
+        qDebug() << "Executed query:" << query.lastQuery();
     }
 
     return question;
@@ -394,18 +414,26 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     stats.testId = 0;
     stats.answers.resize(kTestSize, AnswerType::NoAnswer);
 
-    // Determine which stats vector to use based on difficulty
-    std::vector<TestStats> &stats_vector = (difficulty == DifficultyLevel::Easy)
-                                               ? grammar_test_easy_stats_
-                                               : grammar_test_hard_stats_;
+    // Determine which stats vector to use based on question type and difficulty
+    std::vector<TestStats>* stats_vector = nullptr;
+
+    if (type == QuestionType::MultipleChoice) {
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &grammar_test_easy_stats_
+            : &grammar_test_hard_stats_;
+    } else { // GapFill
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &grammar_gap_fill_easy_stats_
+            : &grammar_gap_fill_hard_stats_;
+    }
 
     // Determine which set of questions to use based on completed tests
     int set_index = 0;
     bool all_sets_completed = true;
 
     // Check stats for completed tests
-    for (size_t i = 0; i < stats_vector.size(); ++i) {
-        if (stats_vector[i].questionsAnswered < kTestSize) {
+    for (size_t i = 0; i < stats_vector->size(); ++i) {
+        if ((*stats_vector)[i].questionsAnswered < kTestSize) {
             all_sets_completed = false;
             set_index = i;
             break;
@@ -434,13 +462,14 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     stats.testId = set_index + 1;
 
     // Ensure stats vector is large enough
-    if (static_cast<size_t>(stats.testId) > stats_vector.size()) {
-        stats_vector.resize(stats.testId);
+    if (static_cast<size_t>(stats.testId) > stats_vector->size()) {
+        stats_vector->resize(stats.testId);
     }
 
     qDebug() << "Generated question set for testId:" << stats.testId
-            << "with startIndex:" << start_index
-            << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
+             << "with startIndex:" << start_index
+             << "type:" << (type == QuestionType::MultipleChoice ? "MultipleChoice" : "GapFill")
+             << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
 
     return questions;
 }

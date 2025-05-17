@@ -47,6 +47,7 @@ private:
     QStackedWidget* stacked_widget_{};
     TaskSelectionWidget* task_selection_widget_{};
     GrammarTestWidget* grammar_test_widget_{};
+    GrammarQuestionWidget* grammar_gap_fill_widget_{};
     QWidget* central_widget_{};
 
     Controller controller_;
