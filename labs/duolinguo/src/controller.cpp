@@ -17,7 +17,6 @@ Controller::Controller() {
     const QString translation_en_to_ru_easy_db_path = "labs/duolinguo/src/db/translationentorueasy.db";
     const QString translation_en_to_ru_hard_db_path = "labs/duolinguo/src/db/translationentoruhard.db";
 
-    // Get absolute paths
     const QFileInfo grammar_test_easy_db_file(grammar_test_easy_db_path);
     const QFileInfo grammar_test_hard_db_file(grammar_test_hard_db_path);
     const QFileInfo grammar_question_easy_db_file(grammar_question_easy_db_path);
@@ -93,7 +92,6 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
                                     const QString &translation_ru_to_en_hard_db_path,
                                     const QString &translation_en_to_ru_easy_db_path,
                                     const QString &translation_en_to_ru_hard_db_path) {
-    // Проверка наличия файлов БД
     const QFileInfo grammar_test_easy_db_file(grammar_test_easy_db_path);
     if (!grammar_test_easy_db_file.exists()) {
         qCritical() << "Database file (Grammar Test Easy) not found:" << grammar_test_easy_db_path;
@@ -137,7 +135,6 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к grammar_test_easy
     grammar_test_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_test_easy");
     grammar_test_easy_db_.setDatabaseName(grammar_test_easy_db_path);
     if (!grammar_test_easy_db_.open()) {
@@ -153,9 +150,9 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к grammar_test_hard
     grammar_test_hard_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_test_hard");
     grammar_test_hard_db_.setDatabaseName(grammar_test_hard_db_path);
+
     if (!grammar_test_hard_db_.open()) {
         qCritical() << "Error opening database (Grammar Test Hard):" << grammar_test_hard_db_.lastError().text();
         grammar_test_easy_db_.close();
@@ -171,12 +168,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к grammar_question_easy
     grammar_question_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_question_easy");
     grammar_question_easy_db_.setDatabaseName(grammar_question_easy_db_path);
     if (!grammar_question_easy_db_.open()) {
-        qCritical() << "Error opening database (Grammar Question Easy):" << grammar_question_easy_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Grammar Question Easy):" << grammar_question_easy_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         return false;
@@ -192,12 +187,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к grammar_question_hard
     grammar_question_hard_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_question_hard");
     grammar_question_hard_db_.setDatabaseName(grammar_question_hard_db_path);
     if (!grammar_question_hard_db_.open()) {
-        qCritical() << "Error opening database (Grammar Question Hard):" << grammar_question_hard_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Grammar Question Hard):" << grammar_question_hard_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         grammar_question_easy_db_.close();
@@ -215,12 +208,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к translation_ru_to_en_easy
     translation_ru_to_en_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "translation_ru_to_en_easy");
     translation_ru_to_en_easy_db_.setDatabaseName(translation_ru_to_en_easy_db_path);
     if (!translation_ru_to_en_easy_db_.open()) {
-        qCritical() << "Error opening database (Translation RU->EN Easy):" << translation_ru_to_en_easy_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Translation RU->EN Easy):" << translation_ru_to_en_easy_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         grammar_question_easy_db_.close();
@@ -240,12 +231,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к translation_ru_to_en_hard
     translation_ru_to_en_hard_db_ = QSqlDatabase::addDatabase("QSQLITE", "translation_ru_to_en_hard");
     translation_ru_to_en_hard_db_.setDatabaseName(translation_ru_to_en_hard_db_path);
     if (!translation_ru_to_en_hard_db_.open()) {
-        qCritical() << "Error opening database (Translation RU->EN Hard):" << translation_ru_to_en_hard_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Translation RU->EN Hard):" << translation_ru_to_en_hard_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         grammar_question_easy_db_.close();
@@ -267,12 +256,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к translation_en_to_ru_easy
     translation_en_to_ru_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "translation_en_to_ru_easy");
     translation_en_to_ru_easy_db_.setDatabaseName(translation_en_to_ru_easy_db_path);
     if (!translation_en_to_ru_easy_db_.open()) {
-        qCritical() << "Error opening database (Translation EN->RU Easy):" << translation_en_to_ru_easy_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Translation EN->RU Easy):" << translation_en_to_ru_easy_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         grammar_question_easy_db_.close();
@@ -296,12 +283,10 @@ bool Controller::InitializeDatabase(const QString &grammar_test_easy_db_path,
         return false;
     }
 
-    // Подключение к translation_en_to_ru_hard
     translation_en_to_ru_hard_db_ = QSqlDatabase::addDatabase("QSQLITE", "translation_en_to_ru_hard");
     translation_en_to_ru_hard_db_.setDatabaseName(translation_en_to_ru_hard_db_path);
     if (!translation_en_to_ru_hard_db_.open()) {
-        qCritical() << "Error opening database (Translation EN->RU Hard):" << translation_en_to_ru_hard_db_.lastError().
-                text();
+        qCritical() << "Error opening database (Translation EN->RU Hard):" << translation_en_to_ru_hard_db_.lastError().text();
         grammar_test_easy_db_.close();
         grammar_test_hard_db_.close();
         grammar_question_easy_db_.close();
@@ -337,14 +322,13 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
     GrammarQuestion question;
     question.type = type;
 
-    // Determine which database to use based on question type and difficulty
     QSqlDatabase *db = nullptr;
     QString table_name;
 
     if (type == QuestionType::MultipleChoice) {
         db = (difficulty == DifficultyLevel::Easy) ? &grammar_test_easy_db_ : &grammar_test_hard_db_;
         table_name = (difficulty == DifficultyLevel::Easy) ? "grammartesteasy_questions" : "grammartesthard_questions";
-    } else { // GapFill
+    } else {
         db = (difficulty == DifficultyLevel::Easy) ? &grammar_question_easy_db_ : &grammar_question_hard_db_;
         table_name = (difficulty == DifficultyLevel::Easy) ? "grammarquestioneasy_questions" : "grammarquestionhard_questions";
     }
@@ -359,7 +343,7 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
     if (type == QuestionType::MultipleChoice) {
         query.prepare(QString("SELECT question, correct_answers, option1, option2, option3, option4, hint "
             "FROM %1 WHERE id = ?").arg(table_name));
-    } else { // GapFill
+    } else {
         query.prepare(QString("SELECT question, correct_answers, hint "
             "FROM %1 WHERE id = ?").arg(table_name));
     }
@@ -371,9 +355,7 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
         question.correct_answers = query.value("correct_answers").toString().split("|", Qt::SkipEmptyParts);
         question.hint = query.value("hint").toString();
 
-        // For MultipleChoice questions, collect and shuffle options
         if (type == QuestionType::MultipleChoice) {
-            // Collect answer options
             for (int i = 1; i <= 4; ++i) {
                 QString opt = query.value("option" + QString::number(i)).toString();
                 if (!opt.isEmpty() && opt != "null") {
@@ -381,11 +363,8 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
                 }
             }
 
-            // Shuffle options for multiple choice questions
             ShuffleOptions(question);
         } else {
-            // For GapFill questions, we might want to include some common options
-            // or leave options empty for free-form answer
             question.options.clear();
         }
     } else {
@@ -403,14 +382,13 @@ Controller::TranslationQuestion Controller::GetNextTranslationQuestion(int quest
     TranslationQuestion question;
     question.type = type;
 
-    // Determine which database to use based on question type and difficulty
     QSqlDatabase *db = nullptr;
     QString table_name;
 
     if (type == QuestionType::TranslationRuToEn) {
         db = (difficulty == DifficultyLevel::Easy) ? &translation_ru_to_en_easy_db_ : &translation_ru_to_en_hard_db_;
         table_name = (difficulty == DifficultyLevel::Easy) ? "translationrutoeneasy_questions" : "translationrutoenhard_questions";
-    } else { // TranslationEnToRu
+    } else {
         db = (difficulty == DifficultyLevel::Easy) ? &translation_en_to_ru_easy_db_ : &translation_en_to_ru_hard_db_;
         table_name = (difficulty == DifficultyLevel::Easy) ? "translationentorueasy_questions" : "translationentoruhard_questions";
     }
@@ -459,24 +437,21 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     stats.testId = 0;
     stats.answers.resize(kTestSize, AnswerType::NoAnswer);
 
-    // Determine which stats vector to use based on question type and difficulty
     std::vector<TestStats>* stats_vector = nullptr;
 
     if (type == QuestionType::MultipleChoice) {
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &grammar_test_easy_stats_
             : &grammar_test_hard_stats_;
-    } else { // GapFill
+    } else {
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &grammar_gap_fill_easy_stats_
             : &grammar_gap_fill_hard_stats_;
     }
 
-    // Determine which set of questions to use based on completed tests
     int set_index = 0;
     bool all_sets_completed = true;
 
-    // Check stats for completed tests
     for (size_t i = 0; i < stats_vector->size(); ++i) {
         if ((*stats_vector)[i].questionsAnswered < kTestSize) {
             all_sets_completed = false;
@@ -485,7 +460,6 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
         }
     }
 
-    // If all sets are completed, return -1 as testId
     if (all_sets_completed) {
         stats.testId = -1;
         GrammarQuestion error_question;
@@ -494,19 +468,15 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
         return questions;
     }
 
-    // Calculate starting index for the question set
     int start_index = (set_index * kTestSize) + 1;
 
-    // Populate questions vector
     for (int i = 0; i < kTestSize; ++i) {
         GrammarQuestion question = GetNextGrammarQuestion(start_index + i, type, difficulty);
         questions.push_back(question);
     }
 
-    // Update testId in stats
     stats.testId = set_index + 1;
 
-    // Ensure stats vector is large enough
     if (static_cast<size_t>(stats.testId) > stats_vector->size()) {
         stats_vector->resize(stats.testId);
     }
@@ -530,24 +500,21 @@ std::vector<Controller::TranslationQuestion> Controller::RequestTranslationQuest
     stats.testId = 0;
     stats.answers.resize(kTestSize, AnswerType::NoAnswer);
 
-    // Determine which stats vector to use based on question type and difficulty
     std::vector<TestStats>* stats_vector = nullptr;
 
     if (type == QuestionType::TranslationRuToEn) {
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &translation_test_ru_to_en_easy_stats_
             : &translation_test_ru_to_en_hard_stats_;
-    } else { // TranslationEnToRu
+    } else {
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &translation_test_en_to_ru_easy_stats_
             : &translation_test_en_to_ru_hard_stats_;
     }
 
-    // Determine which set of questions to use based on completed tests
     int set_index = 0;
     bool all_sets_completed = true;
 
-    // Check stats for completed tests
     for (size_t i = 0; i < stats_vector->size(); ++i) {
         if ((*stats_vector)[i].questionsAnswered < kTestSize) {
             all_sets_completed = false;
@@ -556,7 +523,6 @@ std::vector<Controller::TranslationQuestion> Controller::RequestTranslationQuest
         }
     }
 
-    // If all sets are completed, return -1 as testId
     if (all_sets_completed) {
         stats.testId = -1;
         TranslationQuestion error_question;
@@ -565,19 +531,15 @@ std::vector<Controller::TranslationQuestion> Controller::RequestTranslationQuest
         return questions;
     }
 
-    // Calculate starting index for the question set
     int start_index = (set_index * kTestSize) + 1;
 
-    // Populate questions vector
     for (int i = 0; i < kTestSize; ++i) {
         TranslationQuestion question = GetNextTranslationQuestion(start_index + i, type, difficulty);
         questions.push_back(question);
     }
 
-    // Update testId in stats
     stats.testId = set_index + 1;
 
-    // Ensure stats vector is large enough
     if (static_cast<size_t>(stats.testId) > stats_vector->size()) {
         stats_vector->resize(stats.testId);
     }
@@ -605,7 +567,7 @@ void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &translation_test_ru_to_en_easy_stats_
             : &translation_test_ru_to_en_hard_stats_;
-    } else { // TranslationEnToRu
+    } else {
         stats_vector = (difficulty == DifficultyLevel::Easy)
             ? &translation_test_en_to_ru_easy_stats_
             : &translation_test_en_to_ru_hard_stats_;
@@ -646,7 +608,6 @@ void Controller::TestStats::Clear() {
 }
 
 bool Controller::CheckAnswer(const QString &user_answer, const QStringList &correct_answers) const {
-    // Normalize user answer: keep only letters, convert to lowercase
     QString normalized_user_answer = user_answer.toLower();
     QStringList user_words;
     QString current_word;
@@ -662,9 +623,7 @@ bool Controller::CheckAnswer(const QString &user_answer, const QStringList &corr
         user_words << current_word;
     }
 
-    // Check against each correct answer
     for (const QString &correct_answer : correct_answers) {
-        // Normalize correct answer
         QString normalized_correct_answer = correct_answer.toLower();
         QStringList correct_words;
         current_word.clear();
@@ -680,7 +639,6 @@ bool Controller::CheckAnswer(const QString &user_answer, const QStringList &corr
             correct_words << current_word;
         }
 
-        // Compare word lists
         if (user_words == correct_words) {
             return true;
         }
@@ -712,7 +670,6 @@ QString Controller::GetTotalStats() const {
         int translationHardPoints = 0;
     } stats;
 
-    // Вспомогательная функция для обработки одного вектора статистики
     auto processStatsVector = [&](const std::vector<TestStats>& statsVector, bool isGrammar, bool isEasy) {
         for (const auto& test : statsVector) {
             int correct = test.rightAnswers;
@@ -737,7 +694,6 @@ QString Controller::GetTotalStats() const {
                 stats.easyTotal += answered;
                 stats.easyCorrect += correct;
                 stats.easyIncorrect += incorrect;
-                // Подсчет баллов: 1 балл за тест с kTestSize правильных ответов
                 if (correct == kTestSize) {
                     if (isGrammar) {
                         stats.grammarEasyPoints += 1;
@@ -749,7 +705,6 @@ QString Controller::GetTotalStats() const {
                 stats.hardTotal += answered;
                 stats.hardCorrect += correct;
                 stats.hardIncorrect += incorrect;
-                // Подсчет баллов: 2 балла за тест с kTestSize правильных ответов
                 if (correct == kTestSize) {
                     if (isGrammar) {
                         stats.grammarHardPoints += 2;
@@ -761,7 +716,6 @@ QString Controller::GetTotalStats() const {
         }
     };
 
-    // Обработка всех векторов статистики
     processStatsVector(grammar_test_easy_stats_, true, true);
     processStatsVector(grammar_test_hard_stats_, true, false);
     processStatsVector(grammar_gap_fill_easy_stats_, true, true);
@@ -771,7 +725,6 @@ QString Controller::GetTotalStats() const {
     processStatsVector(translation_test_en_to_ru_easy_stats_, false, true);
     processStatsVector(translation_test_en_to_ru_hard_stats_, false, false);
 
-    // Формирование строки результата на русском языке
     QString result;
     result += QString("Общая статистика:\n");
     result += QString("Всего вопросов отвечено: %1\n").arg(stats.totalQuestionsAnswered);

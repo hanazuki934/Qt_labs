@@ -64,7 +64,6 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
         });
     connect(exit_button_, &QPushButton::clicked, this, &GrammarTestWidget::OnExitClicked);
 
-    // Инициализация таймера с обратным отсчетом
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, [this]() {
         if (test_stats_.timeElapsed > 0) {
@@ -78,7 +77,7 @@ GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
             timer_->stop();
             timer_label_->setText("Время: 00:00");
             QMessageBox::warning(this, "Время истекло", "Время теста закончилось!");
-            OnExitClicked(); // Завершаем тест
+            OnExitClicked();
         }
     });
 }
@@ -89,7 +88,7 @@ void GrammarTestWidget::UpdateTest() {
     question_set_.clear();
     question_set_ = controller_->RequestGrammarQuestionSet(Controller::QuestionType::MultipleChoice, test_stats_.difficulty, test_stats_);
     test_stats_.answers.resize(5, Controller::AnswerType::NoAnswer);
-    test_stats_.timeElapsed = Controller::kGrammarTestDurationSeconds; // Устанавливаем начальное время (180 секунд)
+    test_stats_.timeElapsed = Controller::kGrammarTestDurationSeconds;
     timer_label_->setText(QString("Время: %1:%2")
                          .arg(test_stats_.timeElapsed / 60, 2, 10, QChar('0'))
                          .arg(test_stats_.timeElapsed % 60, 2, 10, QChar('0')));

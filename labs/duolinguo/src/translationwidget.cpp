@@ -8,8 +8,6 @@
 #include <QSize>
 #include <qtmetamacros.h>
 
-// TranslationRuToEnWidget Implementation
-
 TranslationRuToEnWidget::TranslationRuToEnWidget(QWidget *parent, Controller *controller)
     : QWidget(parent), controller_(controller) {
     layout_ = new QVBoxLayout(this);
@@ -173,8 +171,6 @@ void TranslationRuToEnWidget::keyPressEvent(QKeyEvent *event) {
     }
     QWidget::keyPressEvent(event);
 }
-
-// TranslationEnToRuWidget Implementation
 
 TranslationEnToRuWidget::TranslationEnToRuWidget(QWidget *parent, Controller *controller)
     : QWidget(parent), controller_(controller) {

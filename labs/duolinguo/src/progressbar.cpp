@@ -7,7 +7,6 @@ ProgressBar::ProgressBar(QWidget *parent) : QWidget(parent) {
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
-    // Инициализируем 5 блоков (для 5 вопросов)
     for (int i = 0; i < 5; ++i) {
         QLabel *block = new QLabel(this);
         block->setFixedSize(20, 20);

@@ -19,7 +19,6 @@ qt_cc_library(
         "src/controller.cpp",
         "src/mainwindow.cpp",
         "src/grammarwidget.cpp",
-        "src/statistics.cpp",
         "src/translationwidget.cpp",
         "src/progressbar.cpp"
     ],
@@ -27,7 +26,6 @@ qt_cc_library(
         "src/controller.h",
         "src/mainwindow.h",
         "src/grammarwidget.h",
-        "src/statistics.h",
         "src/translationwidget.h",
         "src/progressbar.h"
     ],
