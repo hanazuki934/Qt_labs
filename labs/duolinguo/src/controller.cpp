@@ -7,26 +7,24 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-Controller::Controller(const QString &grammartesteasy_db_path,
-                      const QString &grammartesthard_db_path,
-                      const QString &)
+Controller::Controller()
 {
-    const QString easyDbPath = "labs/duolinguo/src/db/grammartesteasy.db";
-    const QString hardDbPath = "labs/duolinguo/src/db/grammartesthard.db";
+    const QString grammarEasyDbPath = "labs/duolinguo/src/db/grammartesteasy.db";
+    const QString grammarHardDbPath = "labs/duolinguo/src/db/grammartesthard.db";
 
     // Получаем абсолютные пути
-    QFileInfo easyDbFile(easyDbPath);
-    QFileInfo hardDbFile(hardDbPath);
-    QString easyAbsolutePath = easyDbFile.absoluteFilePath();
-    QString hardAbsolutePath = hardDbFile.absoluteFilePath();
+    QFileInfo grammarEasyDbFile(grammarEasyDbPath);
+    QFileInfo grammarHardDbFile(grammarHardDbPath);
+    QString grammarEasyAbsolutePath = grammarEasyDbFile.absoluteFilePath();
+    QString grammarHardAbsolutePath = grammarHardDbFile.absoluteFilePath();
 
-    qDebug() << "Путь к базе данных (Easy):" << easyAbsolutePath;
-    qDebug() << "Путь к базе данных (Hard):" << hardAbsolutePath;
+    qDebug() << "Путь к базе данных (Easy):" << grammarEasyAbsolutePath;
+    qDebug() << "Путь к базе данных (Hard):" << grammarHardAbsolutePath;
 
     grammar_test_easy_stats_.resize(2);
     grammar_test_hard_stats_.resize(2);
 
-    if (!InitializeDatabase(easyAbsolutePath, hardAbsolutePath, "")) {
+    if (!InitializeDatabase(grammarEasyAbsolutePath, grammarHardAbsolutePath, "")) {
         qCritical() << "Не удалось инициализировать базы данных!";
     }
 }
@@ -65,7 +63,7 @@ bool Controller::InitializeDatabase(const QString &grammartesteasy_db_path,
     }
 
     // Настройка подключения к базе данных Easy
-    grammar_test_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_easy");
+    grammar_test_easy_db_ = QSqlDatabase::addDatabase("QSQLITE", "grammar_test_easy");
     grammar_test_easy_db_.setDatabaseName(grammartesteasy_db_path);
 
     if (!grammar_test_easy_db_.open()) {
@@ -106,7 +104,7 @@ bool Controller::InitializeDatabase(const QString &grammartesteasy_db_path,
     return true;
 }
 
-Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int questionIndex,
+Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_index,
                                                              QuestionType type,
                                                              DifficultyLevel difficulty)
 {
@@ -124,7 +122,7 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int questionIndex
     QSqlQuery query(*db);
     query.prepare(QString("SELECT question, correct_answers, option1, option2, option3, option4, hint "
                          "FROM %1 WHERE id = ?").arg(tableName));
-    query.addBindValue(questionIndex);
+    query.addBindValue(question_index);
 
     if (query.exec() && query.next()) {
         question.question = query.value("question").toString();
@@ -196,7 +194,7 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     }
 
     // Calculate starting index for the question set
-    int start_index = setIndex * kTestSize + 1;
+    int start_index = (setIndex * kTestSize) + 1;
 
     // Populate questions vector
     for (int i = 0; i < kTestSize; ++i) {

@@ -69,8 +69,8 @@ void DuolinguoApp::showDifficultyDialog() {
         }
     }
     qDebug() << QString(controller_.GetDifficulty() == Controller::DifficultyLevel::Easy
-                            ? 'Установлена сложность: просто'
-                            : 'Установлена сложность: сложно');
+                            ? "Установлена сложность: просто"
+                            : "Установлена сложность: сложно");
 }
 
 void DuolinguoApp::HandleTaskSelection(int taskType) {
