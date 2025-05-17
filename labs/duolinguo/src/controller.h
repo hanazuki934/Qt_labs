@@ -87,7 +87,17 @@ public:
     [[nodiscard]] int GetBall() const;
     void SetBall(int ball);
 
-    bool InitializeDatabase(const QString& grammar_test_easy_db_path, const QString& grammar_test_hard_db_path, const QString& translationDbPath);
+    bool InitializeDatabase(
+        const QString& grammar_test_easy_db_path,
+        const QString& grammar_test_hard_db_path,
+        const QString& grammar_question_easy_db_path,
+        const QString& grammar_question_hard_db_path,
+        const QString& translation_ru_to_en_easy_db_path,
+        const QString& translation_ru_to_en_hard_db_path,
+        const QString& translation_en_to_ru_easy_db_path,
+        const QString& translation_en_to_ru_hard_db_path
+    );
+
     GrammarQuestion GetNextGrammarQuestion(int question_index, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
     TranslationQuestion GetNextTranslationQuestion();
     std::vector<GrammarQuestion> RequestGrammarQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
@@ -97,6 +107,12 @@ private:
     DifficultyLevel difficulty_{DifficultyLevel::Easy};
     QSqlDatabase grammar_test_easy_db_;
     QSqlDatabase grammar_test_hard_db_;
+    QSqlDatabase grammar_question_easy_db_;
+    QSqlDatabase grammar_question_hard_db_;
+    QSqlDatabase translation_ru_to_en_easy_db_;
+    QSqlDatabase translation_ru_to_en_hard_db_;
+    QSqlDatabase translation_en_to_ru_easy_db_;
+    QSqlDatabase translation_en_to_ru_hard_db_;
     int ball_ = 0;
 
     int current_grammar_test_easy_id_{1};
