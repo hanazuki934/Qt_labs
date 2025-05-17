@@ -397,9 +397,54 @@ Controller::GrammarQuestion Controller::GetNextGrammarQuestion(int question_inde
     return question;
 }
 
-Controller::TranslationQuestion Controller::GetNextTranslationQuestion() {
+Controller::TranslationQuestion Controller::GetNextTranslationQuestion(int question_index,
+                                                                      QuestionType type,
+                                                                      DifficultyLevel difficulty) {
     TranslationQuestion question;
-    question.source_text = "Translation not implemented";
+    question.type = type;
+
+    // Determine which database to use based on question type and difficulty
+    QSqlDatabase *db = nullptr;
+    QString table_name;
+
+    if (type == QuestionType::TranslationRuToEn) {
+        db = (difficulty == DifficultyLevel::Easy) ? &translation_ru_to_en_easy_db_ : &translation_ru_to_en_hard_db_;
+        table_name = (difficulty == DifficultyLevel::Easy) ? "translationrutoeneasy_questions" : "translationrutoenhard_questions";
+    } else { // TranslationEnToRu
+        db = (difficulty == DifficultyLevel::Easy) ? &translation_en_to_ru_easy_db_ : &translation_en_to_ru_hard_db_;
+        table_name = (difficulty == DifficultyLevel::Easy) ? "translationentorueasy_questions" : "translationentoruhard_questions";
+    }
+
+    if (!db || !db->isOpen()) {
+        question.source_text = "Database not open";
+        qDebug() << "Error: Database not open for type:" << static_cast<int>(type)
+                 << "difficulty:" << static_cast<int>(difficulty)
+                 << "table:" << table_name;
+        return question;
+    }
+
+    QSqlQuery query(*db);
+    query.prepare(QString("SELECT question, correct_answers, hint FROM %1 WHERE id = :id").arg(table_name));
+    query.bindValue(":id", question_index);
+
+    if (!query.exec()) {
+        question.source_text = "Query execution failed";
+        qDebug() << "Query error:" << query.lastError().text();
+        qDebug() << "Executed query:" << query.lastQuery();
+        qDebug() << "Bound value (id):" << question_index << "table:" << table_name;
+        return question;
+    }
+
+    if (query.next()) {
+        question.source_text = query.value("question").toString();
+        question.correct_translations = query.value("correct_answers").toString().split("|", Qt::SkipEmptyParts);
+        question.hint = query.value("hint").toString();
+        qDebug() << "Fetched question id:" << question_index << "question:" << question.source_text;
+    } else {
+        question.source_text = "Question not found";
+        qDebug() << "No question found for id:" << question_index << "in table:" << table_name;
+    }
+
     return question;
 }
 
@@ -474,15 +519,105 @@ std::vector<Controller::GrammarQuestion> Controller::RequestGrammarQuestionSet(
     return questions;
 }
 
-void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats &stats) {
-    std::vector<TestStats> &stats_vector = (difficulty == DifficultyLevel::Easy)
-                                               ? grammar_test_easy_stats_
-                                               : grammar_test_hard_stats_;
+std::vector<Controller::TranslationQuestion> Controller::RequestTranslationQuestionSet(
+    QuestionType type,
+    DifficultyLevel difficulty,
+    TestStats &stats) {
+    std::vector<TranslationQuestion> questions;
+    stats.Clear();
+    stats.type = type;
+    stats.difficulty = difficulty;
+    stats.testId = 0;
+    stats.answers.resize(kTestSize, AnswerType::NoAnswer);
 
-    if (stats.testId >= 1 && stats.testId <= static_cast<int>(stats_vector.size())) {
-        stats_vector[stats.testId - 1] = stats;
+    // Determine which stats vector to use based on question type and difficulty
+    std::vector<TestStats>* stats_vector = nullptr;
+
+    if (type == QuestionType::TranslationRuToEn) {
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &translation_test_ru_to_en_easy_stats_
+            : &translation_test_ru_to_en_hard_stats_;
+    } else { // TranslationEnToRu
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &translation_test_en_to_ru_easy_stats_
+            : &translation_test_en_to_ru_hard_stats_;
+    }
+
+    // Determine which set of questions to use based on completed tests
+    int set_index = 0;
+    bool all_sets_completed = true;
+
+    // Check stats for completed tests
+    for (size_t i = 0; i < stats_vector->size(); ++i) {
+        if ((*stats_vector)[i].questionsAnswered < kTestSize) {
+            all_sets_completed = false;
+            set_index = i;
+            break;
+        }
+    }
+
+    // If all sets are completed, return -1 as testId
+    if (all_sets_completed) {
+        stats.testId = -1;
+        TranslationQuestion error_question;
+        error_question.source_text = "All question sets completed";
+        questions.push_back(error_question);
+        return questions;
+    }
+
+    // Calculate starting index for the question set
+    int start_index = (set_index * kTestSize) + 1;
+
+    // Populate questions vector
+    for (int i = 0; i < kTestSize; ++i) {
+        TranslationQuestion question = GetNextTranslationQuestion(start_index + i, type, difficulty);
+        questions.push_back(question);
+    }
+
+    // Update testId in stats
+    stats.testId = set_index + 1;
+
+    // Ensure stats vector is large enough
+    if (static_cast<size_t>(stats.testId) > stats_vector->size()) {
+        stats_vector->resize(stats.testId);
+    }
+
+    qDebug() << "Generated translation question set for testId:" << stats.testId
+             << "with startIndex:" << start_index
+             << "type:" << (type == QuestionType::TranslationRuToEn ? "TranslationRuToEn" : "TranslationEnToRu")
+             << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
+
+    return questions;
+}
+
+void Controller::SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats &stats) {
+    std::vector<TestStats>* stats_vector = nullptr;
+
+    if (type == QuestionType::MultipleChoice) {
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &grammar_test_easy_stats_
+            : &grammar_test_hard_stats_;
+    } else if (type == QuestionType::GapFill) {
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &grammar_gap_fill_easy_stats_
+            : &grammar_gap_fill_hard_stats_;
+    } else if (type == QuestionType::TranslationRuToEn) {
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &translation_test_ru_to_en_easy_stats_
+            : &translation_test_ru_to_en_hard_stats_;
+    } else { // TranslationEnToRu
+        stats_vector = (difficulty == DifficultyLevel::Easy)
+            ? &translation_test_en_to_ru_easy_stats_
+            : &translation_test_en_to_ru_hard_stats_;
+    }
+
+    if (stats.testId >= 1 && stats.testId <= static_cast<int>(stats_vector->size())) {
+        (*stats_vector)[stats.testId - 1] = stats;
         qDebug() << "Saved stats for test" << stats.testId
-                << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
+                 << "type:" << (type == QuestionType::MultipleChoice ? "MultipleChoice" :
+                                type == QuestionType::GapFill ? "GapFill" :
+                                type == QuestionType::TranslationRuToEn ? "TranslationRuToEn" : "TranslationEnToRu")
+                 << "difficulty:" << (difficulty == DifficultyLevel::Easy ? "Easy" : "Hard");
     }
 
     if (stats.rightAnswers == kTestSize) {

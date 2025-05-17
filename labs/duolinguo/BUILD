@@ -21,8 +21,6 @@ qt_cc_library(
         "src/grammarwidget.cpp",
         "src/statistics.cpp",
         "src/translationwidget.cpp",
-        "src/grammarmodel.cpp",
-        "src/translationmodel.cpp",
         "src/progressbar.cpp"
     ],
     hdrs = [
@@ -31,8 +29,6 @@ qt_cc_library(
         "src/grammarwidget.h",
         "src/statistics.h",
         "src/translationwidget.h",
-        "src/grammarmodel.h",
-        "src/translationmodel.h",
         "src/progressbar.h"
     ],
     deps = [

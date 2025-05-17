@@ -13,6 +13,7 @@
 
 #include "controller.h"
 #include "grammarwidget.h"
+#include "translationwidget.h"
 
 class TaskSelectionWidget;
 
@@ -48,6 +49,8 @@ private:
     TaskSelectionWidget* task_selection_widget_{};
     GrammarTestWidget* grammar_test_widget_{};
     GrammarQuestionWidget* grammar_gap_fill_widget_{};
+    TranslationRuToEnWidget* translation_ru_to_en_widget_{};
+    TranslationEnToRuWidget* translation_en_to_ru_widget_{};
     QWidget* central_widget_{};
 
     Controller controller_;

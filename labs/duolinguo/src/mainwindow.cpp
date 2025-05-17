@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "grammarwidget.h"
+#include "translationwidget.h"
 
 #include <QComboBox>
 #include <QFormLayout>
@@ -45,10 +46,14 @@ DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
     stacked_widget_ = new QStackedWidget(central_widget_);
     grammar_test_widget_ = new GrammarTestWidget(central_widget_, &controller_);
     grammar_gap_fill_widget_ = new GrammarQuestionWidget(central_widget_, &controller_);
+    translation_ru_to_en_widget_ = new TranslationRuToEnWidget(central_widget_, &controller_);
+    translation_en_to_ru_widget_ = new TranslationEnToRuWidget(central_widget_, &controller_);
     task_selection_widget_ = new TaskSelectionWidget(central_widget_, &controller_);
     stacked_widget_->addWidget(task_selection_widget_);
     stacked_widget_->addWidget(grammar_test_widget_);
     stacked_widget_->addWidget(grammar_gap_fill_widget_);
+    stacked_widget_->addWidget(translation_ru_to_en_widget_);
+    stacked_widget_->addWidget(translation_en_to_ru_widget_);
     main_layout_->addWidget(stacked_widget_);
 
     setCentralWidget(central_widget_);
@@ -56,6 +61,8 @@ DuolinguoApp::DuolinguoApp(QWidget *parent) : QMainWindow(parent) {
     connect(task_selection_widget_, &TaskSelectionWidget::taskSelected, this, &DuolinguoApp::HandleTaskSelection);
     connect(grammar_test_widget_, &GrammarTestWidget::exitRequested, this, &DuolinguoApp::HandleExit);
     connect(grammar_gap_fill_widget_, &GrammarQuestionWidget::exitRequested, this, &DuolinguoApp::HandleExit);
+    connect(translation_ru_to_en_widget_, &TranslationRuToEnWidget::exitRequested, this, &DuolinguoApp::HandleExit);
+    connect(translation_en_to_ru_widget_, &TranslationEnToRuWidget::exitRequested, this, &DuolinguoApp::HandleExit);
 
     stacked_widget_->setCurrentWidget(task_selection_widget_);
     adjustSize();
@@ -86,12 +93,14 @@ void DuolinguoApp::HandleTaskSelection(int taskType) {
             stacked_widget_->setCurrentWidget(grammar_gap_fill_widget_);
             grammar_gap_fill_widget_->UpdateTest();
             break;
-        /*case TaskSelectionWidget::TranslationEnToRu:
+        case TaskSelectionWidget::TranslationEnToRu:
             stacked_widget_->setCurrentWidget(translation_en_to_ru_widget_);
+            translation_en_to_ru_widget_->UpdateTest();
             break;
         case TaskSelectionWidget::TranslationRuToEn:
             stacked_widget_->setCurrentWidget(translation_ru_to_en_widget_);
-            break;*/
+            translation_ru_to_en_widget_->UpdateTest();
+            break;
         default:
             stacked_widget_->setCurrentWidget(task_selection_widget_);
             break;

@@ -99,8 +99,9 @@ public:
     );
 
     GrammarQuestion GetNextGrammarQuestion(int question_index, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
-    TranslationQuestion GetNextTranslationQuestion();
+    TranslationQuestion GetNextTranslationQuestion(int question_index, QuestionType type, DifficultyLevel difficulty = DifficultyLevel::Easy);
     std::vector<GrammarQuestion> RequestGrammarQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
+    std::vector<TranslationQuestion> RequestTranslationQuestionSet(QuestionType type, DifficultyLevel difficulty, TestStats& stats);
     void SendDataAboutTest(QuestionType type, DifficultyLevel difficulty, const TestStats& stats);
 
 private:

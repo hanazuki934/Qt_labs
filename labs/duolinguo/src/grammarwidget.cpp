@@ -4,6 +4,8 @@
 #include <QKeyEvent>
 #include <QPushButton>
 #include <QTimer>
+#include <qlineedit.h>
+#include <qsize.h>
 #include <qtmetamacros.h>
 
 GrammarTestWidget::GrammarTestWidget(QWidget *parent, Controller *controller)
